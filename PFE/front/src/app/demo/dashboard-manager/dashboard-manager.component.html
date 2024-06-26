@@ -1,0 +1,421 @@
+<div class="row">
+  <!-- Add this line to your HTML file, preferably in the <head> section -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+    <!-- Date Filter Section -->
+    <div class="dashboard-header">
+      <h1 class="mb-3 text-center">Dashboard Manager</h1>
+    </div>
+    
+    <div class="filters">
+      <div class="date-filter">
+        <label for="startDate">Start Date:</label>
+        <input type="date" id="startDate" [(ngModel)]="startDate">
+        
+        <label for="endDate">End Date:</label>
+        <input type="date" id="endDate" [(ngModel)]="endDate">
+        
+        <button (click)="applyDateFilter()">Apply</button>
+      </div>
+    
+      <div class="codemag-filter">
+        <label for="codemag">Filter by Codemag:</label>
+        <select id="codemag" [(ngModel)]="selectedCodemag" (ngModelChange)="onFilterChange($event)">
+          <option value="">All Codemags</option>
+          <option *ngFor="let codemag of codemags" [value]="codemag">{{ codemag }}</option>
+        </select>
+      </div>
+    </div>
+   
+
+  
+
+
+  <div class="row">
+    <div *ngFor="let task of card" class="col-md-6 col-xl-3">
+      <div class="card">
+        <div class="card-body">
+          <h6 class="mb-2 f-w-400 text-muted">{{ task.title }}</h6>
+          <h4 class="mb-3 text-center">
+            <span *ngIf="task.title === 'Total Sales :'">{{ totalSales | currency:'TND':'symbol':'1.3-3' }}</span>
+            <span *ngIf="task.title === 'Total Clients :'">{{ totalclient }}</span>
+            <span *ngIf="task.title === 'Total Monthly Sales :'">{{ totalSalesMonthly | currency:'TND':'symbol':'1.3-3' }}</span>
+          </h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-12 col-xl-4">
+    <h5 class="mb-3">10 Top Selling Products</h5>
+      <div class="card-body">
+        <ngx-charts-bar-vertical
+          [results]="dataVBC"
+          [view]="viewVBC"
+          [animations]="animationsVBC"
+          [legend]="legendVBC"
+          [xAxis]="xAxisVBC"
+          [yAxis]="yAxisVBC"
+          [showYAxisLabel]="showYAxisLabelVBC"
+          [showDataLabel]="true" 
+          [yAxisLabel]="yAxisLabelVBC"
+          [dataLabelFormatting]="dataLabelFormatterVBC">
+        </ngx-charts-bar-vertical>
+      </div>
+  </div>
+
+
+  <div class="col-md-12 col-xl-12">
+    <h5 class="mb-3">Recent Sales Transactions</h5>
+    <div class="card tbl-card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <div class="search-container">
+            <input type="text" placeholder="Search..." (input)="onSearchChange($event)" />
+          </div>
+          <table class="table table-hover table-borderless mb-0">
+            <thead>
+              <tr>
+                <th (click)="onSortChange('vente')" class="text-center">
+                  <i class="fas fa-sort"></i>
+                  <span> Vente </span>
+                </th>
+                <th (click)="onSortChange('date')" class="text-center">
+                  <i class="fas fa-sort"></i>
+                  <span> Date</span>
+                </th>
+                <th (click)="onSortChange('heure')" class="text-center">
+                  <i class="fas fa-sort"></i>
+                  <span> Heure</span>
+                </th>
+                <th (click)="onSortChange('codemag')" class="text-center">
+                  <i class="fas fa-sort"></i>
+                  <span> Codemag</span>
+                </th>
+                <th (click)="onSortChange('total')" class="text-center">
+                  <i class="fas fa-sort"></i>
+                  <span> Total</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let order of paginatedOrderList">
+                <td class="text-center">{{ order.vente }}</td>
+                <td class="text-center">{{ order.date }}</td>
+                <td class="text-center">{{ order.heure }}</td>
+                <td class="text-center">{{ order.codemag }}</td>
+                <td class="text-center">{{ order.total }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <app-pagination [totalPages]="totalPages" [currentPage]="currentPage" (pageChanged)="onPageChange($event)"></app-pagination>
+      </div>
+    </div>
+  </div>
+  
+  
+  
+  <div *ngIf="noDataFound; else chartContent">
+    <p class="error-message">{{ errorMessage }}</p>
+  </div>
+  
+  <ng-template #chartContent>
+    <!-- Horizontal chart -->
+    <div style="display: flex;">
+      <!-- Chart -->
+      <div style="flex-grow: 1;">
+        <ngx-charts-bar-horizontal
+          [view]="view"
+          [scheme]="colorScheme"
+          [results]="single"
+          [gradient]="gradient"
+          [xAxis]="showXAxis"
+          [yAxis]="showYAxis"
+          [showXAxisLabel]="showXAxisLabel"
+          [showYAxisLabel]="showYAxisLabel"
+          [xAxisLabel]="xAxisLabel"
+          [yAxisLabel]="yAxisLabel"
+          [showDataLabel]="true" 
+          [legend]="false"
+          (select)="onSelect($event)"
+          (activate)="onActivate($event)"
+          (deactivate)="onDeactivate($event)">
+        </ngx-charts-bar-horizontal>
+      </div>
+  
+      <!-- Legend -->
+      <div style="margin-right: 200px;">
+        <div style="margin-bottom: 10px; font-weight: bold;">Passage NB :</div>
+  
+        <!-- Custom legend -->
+        <div style="display: flex; flex-direction: column;">
+          <div style="display: flex; align-items: center; margin-bottom: 5px;">
+            <div style="width: 10px; height: 10px; background-color: #AAAAAA; margin-right: 5px;"></div>
+            <span>=1</span>
+          </div>
+          <div style="display: flex; align-items: center; margin-bottom: 5px;">
+            <div style="width: 10px; height: 10px; background-color: #C7B42C; margin-right: 5px;"></div>
+            <span>2-3</span>
+          </div>
+          <div style="display: flex; align-items: center;">
+            <div style="width: 10px; height: 10px; background-color: #5AA454; margin-right: 5px;"></div>
+            <span>>=4</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+  
+  
+
+
+<!-- Gauge chart-->
+<!--<h5 class="mb-3">Stock Levels</h5>
+<div class="card">
+  <div class="card-body">
+    <ngx-gauge
+      [max]="100" 
+      [value]="stockLevelsData.StockLevel" 
+      [units]="'Quantity'"
+      [bigSegments]="10"
+      [smallSegments]="5"
+      [rounded]="true" 
+      [label]="'Current Stock Level'" 
+      [append]="''" 
+    ></ngx-gauge>
+  </div>
+</div>
+-->
+<!-- <ngx-charts-gauge
+  [view]="viewstock"
+  [scheme]="colorSchemestock"
+  [results]="singlestock"
+  [legend]="legend"
+  [max]="20" 
+  (select)="onSelect($event)"
+  (activate)="onActivate($event)"
+  (deactivate)="onDeactivate($event)"
+  >
+</ngx-charts-gauge>-->
+<!-- <ngx-charts-line-chart
+  [view]="viewLine"
+  [scheme]="colorSchemeLine"
+  [legend]="legendLine"
+  [showXAxisLabel]="showXAxisLabelLine"
+  [showYAxisLabel]="showYAxisLabelLine"
+  [xAxis]="xAxis"
+  [yAxis]="yAxis"
+  [xAxisLabel]="xAxisLabelLine"
+  [yAxisLabel]="yAxisLabelLine"
+  [timeline]="timeline"
+  [results]="multi"
+  (select)="onSelect($event)"
+  (activate)="onActivate($event)"
+  (deactivate)="onDeactivate($event)"
+  >
+</ngx-charts-line-chart>-->
+<!-- chart line 2
+<div *ngIf="stockData.length > 0">
+  <ngx-charts-line-chart
+    [view]="viewLine"
+    [scheme]="colorSchemeLine"
+    [xAxis]="showXAxisLabelLine"
+    [yAxis]="showYAxisLabelLine"
+    [legend]="true"
+    [showXAxisLabel]="showXAxisLabelLine"
+    [showYAxisLabel]="showYAxisLabelLine"
+    [xAxisLabel]="xAxisLabelLine"
+    [yAxisLabel]="yAxisLabelLine"
+    [timeline]="false"
+    [results]="stockData"
+  >
+  </ngx-charts-line-chart>
+</div>
+<div *ngIf="stockData.length === 0">
+  <p>Loading...</p>
+</div>
+-->
+<!--table vente de chaque magasin
+<table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+
+  
+  <ng-container matColumnDef="id">
+    <th mat-header-cell *matHeaderCellDef> No. </th>
+    <td mat-cell *matCellDef="let element"> {{element.id}} </td>
+  </ng-container>
+
+ 
+  <ng-container matColumnDef="name">
+    <th mat-header-cell *matHeaderCellDef> Magasin </th>
+    <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+  </ng-container> 
+
+
+  <ng-container matColumnDef="vente">
+    <th mat-header-cell *matHeaderCellDef> Vente TTC </th>
+    <td mat-cell *matCellDef="let element"> {{element.vente}} </td>
+  </ng-container>
+
+   Symbol Column 
+  <ng-container matColumnDef="symbol">
+    <th mat-header-cell *matHeaderCellDef> Symbol </th>
+    <td mat-cell *matCellDef="let element"> {{element.symbol}} </td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+</table>-->
+
+
+<div class="row">
+  <div class="col-md-6 col-xl-6">
+    <h5 class="mb-3">Sales per employee</h5>
+    <div *ngIf="chartOptionsPie">
+      <apx-chart
+        [series]="chartOptionsPie.series"
+        [chart]="chartOptionsPie.chart"
+        [labels]="chartOptionsPie.labels"
+        [responsive]="chartOptionsPie.responsive"
+      ></apx-chart>
+    </div>
+  </div>
+
+<!-- Table for Store Sales -->
+  <div class="col-md-6 col-xl-6">
+    <h5 class="mb-3 text-center">Store Sales</h5>
+    <div class="card tbl-card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover table-borderless mb-0">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Store Name</th>
+                <th>Total Sales</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of tableData">
+                <td>{{ row.id }}</td>
+                <td>{{ row.codemag_id }}</td>
+                <td>{{ row.totalsales | currency:'TND':'symbol':'1.3-3' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!--
+<apx-chart
+  #chart
+  [series]="chartOptions.series"
+  [chart]="chartOptions.chart"
+  [xaxis]="chartOptions.xaxis"
+  [dataLabels]="chartOptions.dataLabels"
+  [grid]="chartOptions.grid"
+  [stroke]="chartOptions.stroke"
+  [title]="chartOptions.title"
+></apx-chart> 
+-->
+
+<!----Line chart -->
+<div *ngIf="chartOptions">
+  <apx-chart
+    [series]="chartOptions.series"
+    [chart]="chartOptions.chart"
+    [xaxis]="chartOptions.xaxis"
+    [yaxis]="chartOptions.yaxis"
+    [stroke]="chartOptions.stroke"
+    [title]="chartOptions.title"
+  ></apx-chart>
+</div>
+
+
+<!----Table Transfert -->
+<div class="col-md-12 col-xl-12 mt-5">
+  <h5 class="mb-3">Transfert</h5>
+  <div class="card tbl-card">
+    <div class="card-body">
+      <div class="search-container">
+        <input type="text" placeholder="Search..." (input)="onTransfertSearchChange($event)" />
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover table-borderless mb-0">
+          <thead>
+            <tr>
+              <th (click)="onTransfertSortChange('codemag')" class="text-center">
+                <i class="fas fa-sort"></i>
+                <span> From Mag</span>
+              </th>
+              <th (click)="onTransfertSortChange('nature')" class="text-center">
+                <i class="fas fa-sort"></i>
+                <span> To Mag</span>
+              </th>
+              <th (click)="onTransfertSortChange('date')" class="text-center">
+                <i class="fas fa-sort"></i>
+                <span> Date</span>
+              </th>
+              <th (click)="onTransfertSortChange('heure')" class="text-center">
+                <i class="fas fa-sort"></i>
+                <span> Heure</span>
+              </th>
+              <th (click)="onTransfertSortChange('total')" class="text-center">
+                <i class="fas fa-sort"></i>
+                <span> Total</span>
+              </th>
+              <th (click)="onTransfertSortChange('quantite')" class="text-center">
+                <i class="fas fa-sort"></i>
+                <span> Quantite</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let transfert of paginatedTransfertList">
+              <td class="text-center">{{ transfert.codemag }}</td>
+              <td class="text-center">{{ transfert.nature }}</td>
+              <td class="text-center">{{ transfert.date }}</td>
+              <td class="text-center">{{ transfert.heure }}</td>
+              <td class="text-center">{{ transfert.total }}</td>
+              <td class="text-center">{{ transfert.quantite }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <app-pagination [totalPages]="totalPagesTransferts" [currentPage]="currentPageTransferts" (pageChanged)="onTransfertPageChange($event)"></app-pagination>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+<!--
+<div class="col-md-12 col-xl-8">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h5 class="mb-0">Unique Visitor</h5>
+    <ul ngbNav aria-busy="true" #nav="ngbNav" class="nav-pills justify-content-end mb-0" (navChange)="onNavChange($event)">
+      <li [ngbNavItem]="1">
+        <a ngbNavLink>Week</a>
+        <ng-template ngbNavContent>
+          <div id="visitor-chart"></div>
+        </ng-template>
+      </li>
+      <li [ngbNavItem]="2">
+        <a ngbNavLink>Month</a>
+        <ng-template ngbNavContent>
+          <div id="visitor-chart-1"></div>
+        </ng-template>
+      </li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <div [ngbNavOutlet]="nav"></div>
+    </div>
+  </div>
+</div>-->

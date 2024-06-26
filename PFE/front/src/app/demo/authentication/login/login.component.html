@@ -1,0 +1,59 @@
+<div class="auth-main">
+  <div class="auth-wrapper v3">
+    <div class="auth-form">
+      <div class="auth-header">
+        <a href="javascript:"><img src="assets/images/logo-zai.png" alt="logo" /></a>
+      </div>
+      
+      <div class="card my-5">
+        <div class="card-body">
+          <form [formGroup]="form" (submit)="submit()">
+            <div class="form-group mb-3">
+              <div class="input-group">
+                <span class="input-group-text" style="font-size: 24px; font-weight: bold;"><i class="ti ti-user"></i></span>
+                <input formControlName="email" type="email" class="form-control" id="username" placeholder="Username" required>
+              </div>
+              <div class="text-danger">
+                {{ getEmailErrorMessage() }}
+              </div>
+            </div>
+            
+            <div class="form-group mb-3">
+              <div class="input-group">
+                <span class="input-group-text" style="font-size: 24px; font-weight: bold;"><i class="ti ti-lock"></i></span>              
+                <input formControlName="password" type="{{ hidePassword ? 'password' : 'text' }}" class="form-control" placeholder="Password" id="Password">
+                <img src="../../../../assets/images/eye-open.png" alt="" id="eyeicon" (click)="togglePasswordVisibility()" [class.hide]="hidePassword">
+              </div>
+              <div class="text-danger">
+                {{ getPasswordErrorMessage() }}
+              </div>
+            </div>
+            
+            <div class="d-flex mt-1 justify-content-between">
+              <div class="form-check">
+                <input class="form-check-input input-primary" type="checkbox" id="customCheckc1" checked="" />
+                <label class="form-check-label text-muted" for="customCheckc1">Keep me sign in</label>
+              </div>
+              <h6 class="text-secondary f-w-400"><a href="javascript:" (click)="navigateToForgetPassword()" >Forgot Password?</a></h6>
+
+            </div>
+            <nav>
+              <ul>
+                <li>
+                 <button type="submit()" class="btn btn-link" >Login</button>
+                
+                  <span></span><span></span><span></span><span></span>
+                </li>
+              </ul>
+            </nav>
+          </form>
+        </div>
+      </div>
+      <div class="auth-footer row">
+        <div class="col-auto my-1">
+          <li class="list-inline-item"><a href="https://www.zai.tn/#!/contact" target="_blank">Contact us</a></li>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

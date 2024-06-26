@@ -1,0 +1,231 @@
+<div class="row">
+  <!-- Add this line to your HTML file, preferably in the <head> section -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+    
+    <div class="dashboard-header">
+      <h1 class="mb-3 text-center">Dashboard Employee</h1>
+    </div>
+    <!-- Date Filter Section -->
+    <div class="filters">
+      <div class="date-filter">
+        <label for="startDate">Start Date:</label>
+        <input type="date" id="startDate" [(ngModel)]="startDate">
+        
+        <label for="endDate">End Date:</label>
+        <input type="date" id="endDate" [(ngModel)]="endDate">
+        
+        <button (click)="applyDateFilter()">Apply</button>
+      </div>
+     
+    
+      <div class="codemag-filter">
+        <label for="company">Company:</label>
+        <input id="company" type="text" [value]="company" readonly class="form-control mb-2">
+        <label for="localisation">Store:</label>
+        <input id="localisation" type="text" [value]="localisation" readonly class="form-control mb-2">
+
+      </div>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div *ngFor="let task of card" class="col-md-6 col-xl-3">
+      <div class="card">
+        <div class="card-body">
+          <h6 class="mb-2 f-w-400 text-muted">{{ task.title }}</h6>
+          <h4 class="mb-3 text-center">
+            <!-- Move the currency symbol after the amount -->
+            <span *ngIf="task.title === 'Total Sales :'">{{ totalSales | currency:'TND':'symbol':'1.3-3' }}</span>
+            <span *ngIf="task.title === 'Number of Sales (Transactions) :'">{{ totalSalesCount}}</span>
+            <span *ngIf="task.title === 'Total Quantity Sold :'">{{ TotalQuantitySold}}</span>
+            <span *ngIf="task.title === 'Total Monthly Sales :'">{{ totalSalesMonthly | currency:'TND':'symbol':'1.3-3' }}</span>
+          <!--  <span *ngIf="task.title === 'Total Sales :'">{{ totalSales | removeCurrencySymbol }} TND</span>
+         --> </h4>
+          </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="col-md-12 col-xl-4">
+    <h5 class="mb-3">10 Top Selling Products</h5>
+      <div class="card-body">
+        <ngx-charts-bar-vertical
+          [results]="dataVBC"
+          [view]="viewVBC"
+          [animations]="animationsVBC"
+          [legend]="legendVBC"
+          [xAxis]="xAxisVBC"
+          [yAxis]="yAxisVBC"
+          [showYAxisLabel]="showYAxisLabelVBC"
+          [showDataLabel]="true" 
+          [yAxisLabel]="yAxisLabelVBC"
+          [dataLabelFormatting]="dataLabelFormatterVBC">
+        </ngx-charts-bar-vertical>
+      </div>
+  </div>
+  
+  <div class="col-md-12 col-xl-12">
+    <h5 class="mb-3">Recent Sales Transactions</h5>
+    <div class="card tbl-card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <div class="search-container">
+            <input type="text" placeholder="Search..." (input)="onSearchChange($event)" />
+          </div>
+          <table class="table table-hover table-borderless mb-0">
+            <thead>
+              <tr>
+                <th (click)="onSortChange('vente')" class="text-center">
+                  <i class="fas fa-sort"></i>
+                  <span> Vente </span>
+                   <!-- FontAwesome icon for sorting -->
+                </th> 
+                <th (click)="onSortChange('date')" class="text-center">
+                  <i class="fas fa-sort"></i>
+                  <span> Date</span> 
+                </th>
+                
+                <th (click)="onSortChange('heure')" class="text-center">
+                  <i class="fas fa-sort"></i>
+                  <span> Heure</span> 
+                </th>
+                  <th (click)="onSortChange('codemag')" class="text-center">
+                    <i class="fas fa-sort"></i>
+                    <span> Codemag</span> 
+                  </th>
+                <th (click)="onSortChange('total')" class="text-center">
+                  <i class="fas fa-sort"></i>
+                  <span> Total</span> 
+                 </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let order of orderList">
+                <td class="text-center">{{ order.vente }}</td>
+                <td class="text-center">{{ order.date }}</td>
+                <td class="text-center">{{ order.heure }}</td>
+                <td class="text-center">{{ order.codemag }}</td>
+                <td class="text-center">{{ order.total }}</td>
+              </tr>
+            </tbody> 
+          </table> 
+        </div>
+        <app-pagination [totalPages]="totalPages" [currentPage]="currentPage" (pageChanged)="onPageChange($event)"></app-pagination>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Pie Chart -->
+    <div class="col-md-6 col-xl-6">
+      <h5 class="mb-3">Sales per employee</h5>
+      <div *ngIf="chartOptionsPie">
+        <apx-chart
+          [series]="chartOptionsPie.series"
+          [chart]="chartOptionsPie.chart"
+          [labels]="chartOptionsPie.labels"
+          [responsive]="chartOptionsPie.responsive"
+        ></apx-chart>
+      </div>
+    </div>
+    
+    <!-- Repeat Customers Donut Chart -->
+    <div class="col-md-6 col-xl-6">
+      <h5 class="mb-3">Repeat /Infrequent Customers</h5>
+      <div *ngIf="chartOptionsDonuts">
+        <apx-chart
+          [series]="chartOptionsDonuts.series"
+          [chart]="chartOptionsDonuts.chart"
+          [labels]="chartOptionsDonuts.labels"
+          [fill]="chartOptionsDonuts.fill"
+          [dataLabels]="chartOptionsDonuts.dataLabels"
+          [responsive]="chartOptionsDonuts.responsive"
+        ></apx-chart>
+      </div>
+    </div>
+  </div>
+  
+<!-- Line chart -->
+    <div *ngIf="chartOptions">
+      <apx-chart
+        [series]="chartOptions.series"
+        [chart]="chartOptions.chart"
+        [xaxis]="chartOptions.xaxis"
+        [yaxis]="chartOptions.yaxis"
+        [stroke]="chartOptions.stroke"
+        [title]="chartOptions.title"
+      ></apx-chart>
+    </div>
+
+ 
+   
+    
+    <div class="col-md-12 col-xl-12">
+      <h5 class="mb-3">Supplier Stock Overview</h5>
+      <div class="mb-3 d-flex align-items-center filter-section">
+        <label for="familleFilter">Filter by Famille:</label>
+        <select class="form-control" id="selectedFamille" [(ngModel)]="familleFilter" (change)="onFilterChange()">
+          <option value="">All</option>
+          <option *ngFor="let fam of familles" [value]="fam">{{ fam }}</option>
+        </select>
+      </div>    
+      <div class="card tbl-card">
+        <div class="card-body">
+          <div class="table-responsive">
+            <div class="search-container">
+              <input type="text" placeholder="Search..." (input)="onSearchChangeStock($event)" />
+            </div>
+            <table class="table table-hover table-borderless mb-0">
+              <thead>
+                <tr>
+                  <th (click)="onSortChangeStock('designation')" class="text-center">
+                    <i class="fas fa-sort"></i>
+                    <span> Designation </span>
+                     <!-- FontAwesome icon for sorting -->
+                  </th> 
+                  <th (click)="onSortChangeStock('famille')" class="text-center">
+                    <i class="fas fa-sort"></i>
+                    <span> Famille </span>
+                     <!-- FontAwesome icon for sorting -->
+                  </th> 
+                  <th (click)="onSortChangeStock('total_qte')" class="text-center">
+                    <i class="fas fa-sort"></i>
+                    <span> Qte </span> 
+                  </th>
+                  
+                  <th (click)="onSortChangeStock('fournisseur')" class="text-center">
+                    <i class="fas fa-sort"></i>
+                    <span> Fournisseur</span> 
+                  </th>
+                   
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of filteredStockData">
+                  <td class="text-center">{{ item.designation }}</td>
+                  <td class="text-center">{{ item.famille }}</td>
+                  <td class="text-center">{{ item.total_qte }}</td>
+                  <td class="text-center">{{ item.fournisseur }}</td>
+                </tr>
+              </tbody> 
+            </table> 
+          </div>
+          <app-pagination [totalPages]="totalPagesStock" [currentPage]="currentPageStock" (pageChanged)="onPageChangeStock($event)"></app-pagination>
+        </div>
+      </div>
+      <div>
+        <!-- Line chart -->
+        <div *ngIf="chartOptionsDaily">
+          <apx-chart
+            [series]="chartOptionsDaily.series"
+            [chart]="chartOptionsDaily.chart"
+            [xaxis]="chartOptionsDaily.xaxis"
+            [yaxis]="chartOptionsDaily.yaxis"
+            [stroke]="chartOptionsDaily.stroke"
+            [title]="chartOptionsDaily.title"
+          ></apx-chart>
+        </div>
+      </div>
+      

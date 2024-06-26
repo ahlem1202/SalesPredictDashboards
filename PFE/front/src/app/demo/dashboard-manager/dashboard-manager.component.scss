@@ -1,0 +1,71 @@
+.bar-label {
+  fill: #fff; /* Label text color */
+  font-size: 12px; /* Label font size */
+}
+
+.dashboard-header {
+  text-align: center;
+  //color: #333333; /* Header text color */
+}
+.dashboard-header h1 {
+  color: #034881; /* Change this to the desired color */
+  font-size: 40px; /* Adjust the font size if needed */
+}
+
+.filters {
+  display: flex;
+  align-items: center;
+  margin: 20px;
+  background-color: #f9f9f9; /* Background color for the filter container */
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Box shadow for a subtle 3D effect */
+}
+
+.date-filter,
+.codemag-filter {
+  display: flex;
+ // flex-direction: column;
+  gap: 10px;
+}
+
+.codemag-filter {
+  margin-left: auto; /* Pushes the codemag filter to the right */
+}
+
+.filters label {
+  margin-bottom: 5px;
+  font-weight: bold; /* Make the label text bold */
+  color: #555; /* Label text color */
+}
+
+.filters input,
+.filters select,
+.filters button {
+  padding: 8px;
+  border: 1px solid #ccc; /* Border color for input, select, and button */
+  border-radius: 4px; /* Rounded corners */
+  margin-bottom: 10px;
+  font-size: 14px; /* Increase font size */
+}
+
+.filters input.input-field,
+.filters select.input-field {
+  background-color: #fff; /* Background color for input and select fields */
+}
+
+.filters button.apply-button {
+  background-color: #007bff; /* Button background color */
+  color: #fff; /* Button text color */
+  border: none; /* Remove border */
+  cursor: pointer; /* Pointer cursor on hover */
+  transition: background-color 0.3s; /* Smooth transition for background color */
+}
+
+.filters button.apply-button:hover {
+  background-color: #0056b3; /* Button background color on hover */
+}
+.error-message {
+  color: red;
+  font-weight: bold;
+}

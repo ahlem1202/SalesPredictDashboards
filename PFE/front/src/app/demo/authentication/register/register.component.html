@@ -1,0 +1,114 @@
+<div class="auth-main">
+  <div class="auth-wrapper v3">
+    <form class="auth-form"  #registerForm="ngForm" >
+      <div class="auth-header">
+        <a href="javascript:"><img src="assets/images/logo-zai.png" alt="logo img" /></a>
+      </div>
+      <div class="card my-5">
+        <div class="card-body">
+        
+          <div class="d-flex justify-content-between align-items-end mb-4">
+            <h3 class="mb-0"><b>Create Account</b></h3>
+           <!--<select class="form-select w-auto" style="max-width: 150px;" id="role" (change)="onRoleChange($event)">--> 
+              <select class="form-select w-auto" style="max-width: 150px;" [(ngModel)]="Type" name="Type" (change)="onRoleChange($event)">
+              <option value="admin">Admin</option>
+              <option value="manager">Manager</option>
+              <option value="employee">Employee</option>
+            </select>
+          </div>
+      <!--  <form [formGroup]="form" (submit)="submit()">-->  
+          <div class="row">
+            
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label class="form-label" for="firstName">First Name*</label>
+               <!-- <input formControlName="firstName" type="text" class="form-control" id="firstName" placeholder="First Name" />-->
+               <input type="text" class="form-control" id="firstName" placeholder="First Name" [(ngModel)]="firstName" name="firstName" required />
+               <div *ngIf="registerForm.controls['firstName'] && (registerForm.controls['firstName'].dirty || registerForm.controls['firstName'].touched)">
+                <div *ngIf="registerForm.controls['firstName'].errors && registerForm.controls['firstName'].errors?.['required']" class="error-message">First Name is required.</div>
+              </div>
+              
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label class="form-label" for="lastName">Last Name*</label>
+                <!--<input formControlName="lastName" type="text" class="form-control" id="lastName" placeholder="Last Name" />-->
+                <input type="text" class="form-control" id="lastName" placeholder="Last Name" [(ngModel)]="lastName" name="lastName" required />
+                <div *ngIf="registerForm.controls['lastName'] && (registerForm.controls['lastName'].dirty || registerForm.controls['lastName'].touched)">
+                  <div *ngIf="registerForm.controls['lastName'].errors && registerForm.controls['lastName'].errors?.['required']" class="error-message">
+                    Last Name is required.
+                </div>
+                                </div>
+                
+              </div>
+            </div>
+          </div>
+          <div class="form-group mb-3">
+            <label class="form-label" for="company">Company*</label>
+            <!--  <input formControlName="company" type="text" class="form-control" id="company" placeholder="Company" />-->  
+            <input type="text" class="form-control" id="company" placeholder="Company Name" [(ngModel)]="company" name="company" required />
+            <div *ngIf="registerForm.controls['company'] && (registerForm.controls['company'].dirty || registerForm.controls['company'].touched)">
+              <div *ngIf="registerForm.controls['company'].errors && registerForm.controls['company'].errors?.['required']" class="error-message">Company is required.</div>
+            </div>
+          </div>
+            <div class="form-group mb-3">
+              <label class="form-label" for="emailAddress">Email Address*</label>
+             <!-- <input formControlName="emailAddress" type="email" class="form-control" id="emailAddress" placeholder="Email Address" (input)="clearDangerMessage()" required />-->
+              <input type="email" class="form-control" id="emailAddress" placeholder="Email Address" [(ngModel)]="emailAddress" name="emailAddress" required email />
+              <div *ngIf="registerForm.controls['emailAddress'] && (registerForm.controls['emailAddress'].dirty || registerForm.controls['emailAddress'].touched)" >
+                <div *ngIf="registerForm.controls['emailAddress'].errors?.['required']" class="error-message">Email address is required.</div>
+                <div *ngIf="registerForm.controls['emailAddress'].errors?.['email']" class="error-message">Invalid email address.</div>
+               <!-- Display emailExistMessage if it exists -->
+               <div *ngIf="showError" class="error-message">
+                Email already exists
+              </div>
+              </div>
+            </div>
+          <div class="form-group mb-3">
+            <label class="form-label" for="password">Password*</label>
+            <!--<input formControlName="password" type="{{ hidePassword ? 'password' : 'text' }}" class="form-control" placeholder="Password" id="password">-->
+            <input type="{{ hidePassword ? 'password' : 'text' }}" class="form-control" id="password" placeholder="Password" [(ngModel)]="password" name="password" required minlength="8" maxlength="15" />
+            <div *ngIf="registerForm.controls['password'] && (registerForm.controls['password'].dirty || registerForm.controls['password'].touched)">
+              <div *ngIf="registerForm.controls['password'].errors?.['required']" class="error-message">Password is required.</div>
+              <div *ngIf="registerForm.controls['password'].errors?.['minlength']" class="error-message">Password must be at least 8 characters long.</div>
+              <div *ngIf="registerForm.controls['password'].errors?.['maxlength']" class="error-message" >Password cannot exceed 15 characters.</div>
+            </div>
+            <img src="../../../../assets/images/eye-open.png" alt="" id="eyeicon" (click)="togglePasswordVisibility()" [class.hide]="hidePassword">
+          </div>
+
+        <div *ngIf="Type !== 'admin'">
+          <div class="form-group mb-3">
+            <label class="form-label" for="baseName">Base Name</label>
+            <select class="form-select" id="baseName" [(ngModel)]="baseName" name="baseName" required>
+              <option value="" disabled selected>Select Base Name</option>
+              <option *ngFor="let option of basenameOptions" [value]="option.value">{{ option.label }}</option>
+            </select>
+            <div *ngIf="registerForm?.controls['baseName']?.errors && (registerForm?.controls['baseName'].dirty || registerForm?.controls['baseName'].touched)">
+             <div *ngIf="registerForm?.controls['baseName']?.errors?.['required']" class="text-danger">Base Name is required.</div>
+            </div>
+          </div> 
+         <!-- <div *ngIf="Type === 'employee'">-->
+          <div *ngIf="Type == 'employee'">
+            <div class="form-group mb-3">
+              <label class="form-label" for="localisation">Localisation*</label>
+              <!-- <input formControlName="localisation" type="text" class="form-control" id="localisation" placeholder="Localisation" />--> 
+              <input type="text" class="form-control" id="localisation" placeholder="Localisation" [(ngModel)]="localisation" name="localisation" required />
+              <div *ngIf="registerForm.controls['localisation'] && (registerForm.controls['localisation'].dirty || registerForm.controls['localisation'].touched)">
+                <div *ngIf="registerForm.controls['localisation'].errors?.['required']">localisation is required.</div>
+              </div>
+            </div>
+          </div> 
+        </div>
+        <p class="mt-4 text-sm text-muted">By Signing up, you agree to our <a href="javascript:" class="text-primary"> Terms of Service </a> and <a href="javascript:" class="text-primary"> Privacy Policy</a></p>
+          <div class="d-grid mt-3">
+            <button type="submit" class="btn btn-primary" [disabled]="registerForm.invalid" (click)="createAccount(); resetForm()" >Create Account</button>
+          </div>
+        </div>
+        </div>
+      </form>
+  </div>
+</div>
+
+             

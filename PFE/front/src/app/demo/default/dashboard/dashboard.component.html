@@ -1,0 +1,243 @@
+<div class="row">
+  <!-- Add this line to your HTML file, preferably in the <head> section -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+    
+    <div class="dashboard-header">
+      <h1 class="mb-3 text-center">Dashboard Admin</h1>
+    </div>
+    
+    <div class="filters">
+      <div class="codemag-filter">
+        <label for="company">Company :</label>
+        <input id="company" type="text" [value]="company" readonly class="form-control mb-2">
+      </div>
+    </div>
+  </div>
+  <div class="row">
+@for (task of card; track task) {
+  <div class="col-md-6 col-xl-3">
+    <div class="card">
+      <div class="card-body">
+        <h6 class="mb-2 f-w-400 text-muted">{{ task.title }}</h6>
+        <h4 class="mb-3 text-center">
+          <span *ngIf="task.title === 'Active Users Count :'">{{ activeUsersCount }}</span>
+          <span *ngIf="task.title === 'Nb of Users:'">{{ totalUsers }}</span>
+          <span *ngIf="task.title === 'Nb of Databases:'">{{ nbDBs }}</span>
+          <span *ngIf="task.title === 'Nb of managers:'">{{ managerCount }}</span>
+        </h4>   
+      </div>
+    </div>
+  </div>
+}
+</div>
+  <!-- Table -->
+  <div class="col-md-12">
+    <h5 class="mb-3">Users Actions List</h5>
+    <div class="card tbl-card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <div class="mb-3">
+            <input type="text" class="form-control" (input)="onSearchChangeUsersActions($event)" placeholder="Search users actions ..." />
+          </div>
+          <table class="table table-hover table-borderless mb-0">
+            <thead>
+              <tr>
+                
+                <th (click)="onSortChangeUsersActions('firstName')" class="text-center">
+                  <span> FIRST NAME </span>
+                  <i *ngIf="sortByUsersActions === 'firstName'" class="material-icons">
+                    {{ sortOrderUsersActions === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                  </i>
+                </th>
+                
+                <th (click)="onSortChangeUsersActions('lastName')" class="text-center">
+                  <span> LAST NAME </span>
+                  <i *ngIf="sortByUsersActions === 'lastName'" class="material-icons">
+                    {{ sortOrderUsersActions === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                  </i>
+                </th>
+                
+                <th (click)="onSortChangeUsersActions('company')" class="text-center">
+                  <span> COMPANY </span>
+                  <i *ngIf="sortByUsersActions === 'company'" class="material-icons">
+                    {{ sortOrderUsersActions === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                  </i>
+                </th>
+                
+                <th (click)="onSortChangeUsersActions('Type')" class="text-center">
+                  <span> TYPE </span>
+                  <i *ngIf="sortByUsersActions === 'Type'" class="material-icons">
+                    {{ sortOrderUsersActions === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                  </i>
+                </th>
+                
+                <th (click)="onSortChangeUsersActions('localisation')" class="text-center">
+                  <span> LOCALISATION </span>
+                  <i *ngIf="sortByUsersActions === 'localisation'" class="material-icons">
+                    {{ sortOrderUsersActions === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                  </i>
+                </th>  
+                <th class="text-center">Users ACTIONS</th>
+
+<th (click)="onSortChangeUsersActions('loginCount')" class="text-center">
+  <span> USER LOGIN COUNT </span>
+  <i *ngIf="sortByUsersActions === 'loginCount'" class="material-icons">
+    {{ sortOrderUsersActions === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+  </i>
+</th>
+                  
+                <th class="text-center">Password Strengths</th>
+                <th class="text-center">ACTIONS</th>
+
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of paginatedUsersActions">
+                <td class="text-center">{{ user.firstName }}</td>
+                <td class="text-center">{{ user.lastName }}</td>
+                <td class="text-center">{{ user.company }}</td>
+                <td class="text-center">{{ user.Type }}</td>
+                <td class="text-center">{{ user.localisation }}</td>
+                <td>
+                  <ng-container *ngIf="user.last_reset_password_action && user.last_reset_password_timestamp; else hyphenContent">
+                    <p>has made a <span class="green-text">{{ user.last_reset_password_action }}</span> 
+                      <span class="black-text"> on </span> 
+                      <span class="blue-text">{{ formatDate(user.last_reset_password_timestamp) }}</span> 
+                      <span class="black-text"> at </span> 
+                      <span class="blue-text">{{ formatTime(user.last_reset_password_timestamp) }}</span>
+                    </p>
+                  </ng-container>
+                </td>
+                <ng-template #hyphenContent>
+                  <div class="text-center">_</div>                
+                </ng-template>
+                
+                <td class="text-center">{{ getUserLoginCount(user.id) }}</td> 
+                <td>
+                  <div class="progress">
+                    <div class="progress-bar"
+                         [ngClass]="{
+                           'bg-danger': user.password_strength === 'Normal',
+                           'bg-warning': user.password_strength === 'Medium',
+                           'bg-success': user.password_strength === 'Strong'
+                         }"
+                         [style.width.%]="calculateProgressBarWidth(user.password_strength)">
+                      {{ user.password_strength }}
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <!-- Add delete icon -->
+                  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
+                  <button class="btn btn-sm btn-danger" (click)="deleteAction(user)">
+                    <i class="material-icons">delete</i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+            
+            
+          </table>
+        </div>
+ <!-- Pagination Controls -->
+ <div class="d-flex justify-content-between align-items-center mt-3">
+  <button class="btn btn-sm btn-primary" (click)="onPageChangeUsersActions(currentPageUsersActions - 1)" [disabled]="currentPageUsersActions === 1">Previous</button>
+  <span>Page {{ currentPageUsersActions }} of {{ totalPagesUsersActions }}</span>
+  <button class="btn btn-sm btn-primary" (click)="onPageChangeUsersActions(currentPageUsersActions + 1)" [disabled]="currentPageUsersActions === totalPagesUsersActions">Next</button>
+</div>
+      </div>
+    </div>
+  </div>
+  <!--end Table -->
+ 
+  <!-- Table 2 -->
+  <div class="row">
+    <!-- Users List -->
+    <div class="col-md-8">
+      <h5 class="mb-3">Users List</h5>
+      <div class="card tbl-card">
+        <div class="card-body">
+          <!-- Search Input -->
+          <div class="mb-3">
+            <input type="text" class="form-control" (input)="onSearchChange($event)" placeholder="Search users..." />
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover table-borderless mb-0">
+              <thead>
+                <tr>
+                  <th class="text-center" (click)="onSortChange('firstName')">
+                    FIRST NAME
+                    <i *ngIf="sortBy === 'firstName'" class="material-icons">
+                      {{ sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                    </i>
+                  </th>
+                  <th class="text-center" (click)="onSortChange('lastName')">
+                    LAST NAME
+                    <i *ngIf="sortBy === 'lastName'" class="material-icons">
+                      {{ sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                    </i>
+                  </th>
+                  <th class="text-center" (click)="onSortChange('company')">
+                    COMPANY
+                    <i *ngIf="sortBy === 'company'" class="material-icons">
+                      {{ sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                    </i>
+                  </th>
+                  <th class="text-center" (click)="onSortChange('Type')">
+                    TYPE
+                    <i *ngIf="sortBy === 'Type'" class="material-icons">
+                      {{ sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                    </i>
+                  </th>
+                  <th class="text-center" (click)="onSortChange('localisation')">
+                    LOCALISATION
+                    <i *ngIf="sortBy === 'localisation'" class="material-icons">
+                      {{ sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                    </i>
+                  </th>
+                  <th class="text-center">ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let user of userList2">
+                  <td class="text-center">{{ user.firstName }}</td>
+                  <td class="text-center">{{ user.lastName }}</td>
+                  <td class="text-center">{{ user.company }}</td>
+                  <td class="text-center">{{ user.Type }}</td>
+                  <td class="text-center">{{ user.localisation }}</td>
+                  <td class="text-center">
+                    <button class="btn btn-sm btn-danger" (click)="deleteUser(user)">
+                      <i class="material-icons">delete</i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <!-- Pagination Controls -->
+          <div class="d-flex justify-content-between align-items-center mt-3">
+            <button class="btn btn-sm btn-primary" (click)="onPageChange(currentPageUsers - 1)" [disabled]="currentPageUsers === 1">Previous</button>
+            <span>Page {{ currentPageUsers }} of {{ totalPagesUsers }}</span>
+            <button class="btn btn-sm btn-primary" (click)="onPageChange(currentPageUsers + 1)" [disabled]="currentPageUsers === totalPagesUsers">Next</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+
+
+
+
+<!-- Pie Chart -->
+ 
+<div class="col-md-4">
+  <h5 class="mb-3">User Types Distribution</h5>
+  <div class="card">
+    <div class="card-body">
+      <canvas id="pieChart" width="400" height="400"></canvas>
+    </div>
+  </div>
+</div>
+</div>

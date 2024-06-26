@@ -1,0 +1,109 @@
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: black;
+   
+}
+
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+nav ul li {
+    --c: #05B0FF;
+    color: var(--c);
+    font-size: 16px;
+    border: 0.1em solid var(--c);
+    border-radius: 0.8em;
+    width: 25em;
+    height: 3em;
+    text-transform: none; /* Remove uppercase */
+    font-weight: normal; /* Remove bold */
+    font-family: Arial, sans-serif; /* Change font family */
+    letter-spacing: 0.1em;
+    text-align: center;
+    line-height: 3em;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    transition: 0.5s;
+    margin: 1em;
+}
+
+nav ul li span {
+    position: absolute;
+    width: 25%;
+    height: 100%;
+    background-color: var(--c);
+    transform: translateY(150%);
+    border-radius: 50%;
+    left: calc((var(--n) - 1) * 25%);
+    transition: 0.5s;
+    transition-delay: calc((var(--n) - 1) * 0.1s);
+    z-index: -1;
+}
+
+nav ul li:hover {
+    color: rgb(0, 0, 0);
+}
+
+nav ul li:hover span {
+    transform: translateY(0) scale(2);
+}
+
+nav ul li span:nth-child(1) {
+    --n: 1;
+}
+
+nav ul li span:nth-child(2) {
+    --n: 2;
+}
+
+nav ul li span:nth-child(3) {
+    --n: 3;
+}
+
+nav ul li span:nth-child(4) {
+    --n: 4;
+}
+
+.form-group.mb-3 {
+    position: relative; // Ensure relative positioning for absolute positioning of the eye icon
+}
+
+.form-group.mb-3 input {
+    width: calc(100% - 40px); // Adjust the width of the input field to accommodate the eye icon
+    padding-right: 40px; // Add padding to the right of the input field for the eye icon
+}
+
+.form-group.mb-3 img {
+    position: absolute;
+    top: 58%; // Position the eye icon vertically centered
+    right: 50px; // Adjust the distance from the right side of the input field
+    transform: translateY(-50%); // Center vertically using translateY and negative margin
+    width: 30px; // Adjust the width of the eye icon as per your requirement
+    height: auto; // Automatically adjust the height based on the width to maintain aspect ratio
+    cursor: pointer;
+}
+.form-group2.mb-3 input {
+    width: calc(100% - 40px); // Adjust the width of the input field to accommodate the eye icon
+    padding-right: 40px; // Add padding to the right of the input field for the eye icon
+}
+.form-group2.mb-3 img {
+    position: absolute;
+    top: 84%; // Position the eye icon vertically centered
+    right: 72px; // Adjust the distance from the right side of the input field
+    transform: translateY(-50%); // Center vertically using translateY and negative margin
+    width: 30px; // Adjust the width of the eye icon as per your requirement
+    height: auto; // Automatically adjust the height based on the width to maintain aspect ratio
+    cursor: pointer;
+}
+
+  
+
+  

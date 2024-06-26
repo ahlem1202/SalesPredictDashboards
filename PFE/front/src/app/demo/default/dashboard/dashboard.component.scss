@@ -1,0 +1,71 @@
+.blue-text {
+    color: blue;
+    text-decoration: underline;
+  }
+  .black-text {
+    color: black;
+    text-decoration: none; /* This removes underline */
+  }
+  
+  .green-text {
+    color: green;
+    text-decoration: none; /* This removes underline */
+    font-weight: bold;
+  }
+ 
+
+  .dashboard-header {
+    text-align: center;
+    //color: #333333; /* Header text color */
+  }
+  .dashboard-header h1 {
+    color: #034881; /* Change this to the desired color */
+    font-size: 40px; /* Adjust the font size if needed */
+  }
+  .filters {
+    display: flex;
+    align-items: center;
+    margin: 20px;
+    background-color: #f9f9f9d0; /* Background color for the filter container */
+    padding: 1 px;
+    border-radius: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Box shadow for a subtle 3D effect */
+  }
+  
+  .date-filter,
+  .codemag-filter {
+    display: block; /* Ensures it behaves like a block element */
+    margin: 0 auto; /* Sets equal margin on left and right, centering it */
+    text-align: center; /* Centers the text content inside */
+    gap: 20px;
+}
+
+
+  
+  .codemag-filter {
+    margin-right: auto; /* Pushes the codemag filter to the right */
+  }
+  
+  .filters label {
+    margin-bottom: 1px;
+    font-weight: bold; /* Make the label text bold */
+    color: #544040; /* Label text color */
+  }
+  
+  .filters input,
+  .filters select,
+  .filters button {
+    padding: 8px;
+    border: 1px solid #2f316c; /* Border color for input, select, and button */
+    border-radius: 4px; /* Rounded corners */
+    margin-bottom: 10px;
+    font-size: 14px; /* Increase font size */
+  }
+  
+  .filters input.input-field,
+  .filters select.input-field {
+    background-color: #6e4949; /* Background color for input and select fields */
+  }
+  
+
+  
