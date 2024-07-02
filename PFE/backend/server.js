@@ -1122,121 +1122,11 @@ app.get('/api/manager/count', (req, res) => {
 });
  
 /**************************************Manager Dashboard ****************************** */
-/*app.get('/totalsales', async (req, res) => {
-    const { codemag, type, localisation } = req.query;
-    const userId = req.headers.userid; 
-
-    // Base SQL query
-    let query = `
-        SELECT codemag, SUM(total) AS TotalSales 
-        FROM "vente"
-        WHERE nature ='VENTE'
-    `;
-    let queryParams = [];
-
-    if (codemag === 'All') {
-        // Calculate total sales for all codemags
-        query = `
-            SELECT SUM(total) AS TotalSales 
-            FROM "vente"
-            WHERE nature ='VENTE'
-        `;
-    } else if (type === 'manager') {
-        // For Manager, filter by codemag if provided, otherwise aggregate total sales for all codemags
-        if (codemag) {
-            query += ' AND codemag = $1';
-            queryParams.push(codemag);
-        }
-        query += ' GROUP BY codemag';
-    } else if (type === 'employee') {
-        // For Employee, filter by localisation and codemag
-        if (localisation) {
-            query += ' AND codemag = $1';  // Adjust this condition based on your specific filtering criteria
-            queryParams.push(localisation);
-        }
-        if (codemag) {
-            query += ' AND codemag = $2 GROUP BY codemag';
-            queryParams.push(codemag);
-        } else {
-            query += ' GROUP BY codemag';
-        }
-    } else {
-        // If userType is not provided or invalid, return an error
-        return res.status(400).json({ error: 'Invalid user type' });
-    }
-
-    try {
-        const { rows } = await base.query(query, queryParams);
-        //console.log( rows)
-        res.json(rows);  // Send all rows (filtered or not) to the frontend
-    } catch (error) {
-        console.error('Error executing query', error.stack);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-});*/
-/* with date cdt
 app.get('/totalsales', async (req, res) => {
     const { codemag, type, localisation, startDate, endDate } = req.query;
     const userId = req.headers.userid; 
-
-    // Base SQL query
-    let query = `
-        SELECT codemag, SUM(total) AS TotalSales 
-        FROM "vente"
-        WHERE nature ='VENTE'
-    `;
-    let queryParams = [];
-
-    // Filter by startDate and endDate if provided
-    if (startDate && endDate) {
-        query += ' AND date BETWEEN $1 AND $2';
-        queryParams.push(startDate, endDate);
-    }
-
-    if (codemag === 'All') {
-        // Calculate total sales for all codemags
-        query = `
-            SELECT SUM(total) AS TotalSales 
-            FROM "vente"
-            WHERE nature ='VENTE'
-        `;
-    } else if (type === 'manager') {
-        // For Manager, filter by codemag if provided, otherwise aggregate total sales for all codemags
-        if (codemag) {
-            query += ' AND codemag = $1';
-            queryParams.push(codemag);
-        }
-        query += ' GROUP BY codemag';
-    } else if (type === 'employee') {
-        // For Employee, filter by localisation and codemag
-        if (localisation) {
-            query += ' AND codemag = $1';  // Adjust this condition based on your specific filtering criteria
-            queryParams.push(localisation);
-        }
-        if (codemag) {
-            query += ' AND codemag = $2 GROUP BY codemag';
-            queryParams.push(codemag);
-        } else {
-            query += ' GROUP BY codemag';
-        }
-    } else {
-        // If userType is not provided or invalid, return an error
-        return res.status(400).json({ error: 'Invalid user type' });
-    }
-
-    try {
-        const { rows } = await base.query(query, queryParams);
-        res.json(rows);  // Send all rows (filtered or not) to the frontend
-    } catch (error) {
-        console.error('Error executing query', error.stack);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-});*/
-app.get('/totalsales', async (req, res) => {
-    const { codemag, type, localisation, startDate, endDate } = req.query;
-    const userId = req.headers.userid; 
-console.log("startDate",startDate)
-console.log("endDate",endDate)
+  //  console.log("startDate",startDate)
+    //console.log("endDate",endDate)
 
     // Base SQL query
     let query = `
@@ -1302,8 +1192,6 @@ console.log("endDate",endDate)
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-
-
 
 app.get('/salesperemployee', async (req, res) => {
     const { codemag, type, localisation } = req.query;
@@ -1389,8 +1277,10 @@ app.get('/topsales', async (req, res) => {
 });
 
 app.get('/RecentOrders', async (req, res) => {
-    const { codemag, type, localisation, search, sortBy, sortOrder, page, rowsPerPage } = req.query;
+    const { codemag, type, localisation, search, sortBy, sortOrder, page, rowsPerPage , startDate, endDate } = req.query;
     const userId = req.headers.userid;
+    console.log("startDate",startDate)
+    console.log("endDate",endDate)
       // Parse and validate pagination parameters
       const parsedPage = parseInt(page, 10);
       const parsedRowsPerPage = parseInt(rowsPerPage, 10);
@@ -1413,7 +1303,10 @@ app.get('/RecentOrders', async (req, res) => {
         nature = 'VENTE'`;
     
     let queryParams = [];
-    
+    if (startDate && endDate) {
+        query += ' AND date BETWEEN $2 AND $3';
+        queryParams.push(startDate, endDate);
+    }
     if (type === 'employee') {
       if (localisation) {
         query += ' AND codemag = $1';
@@ -1421,6 +1314,10 @@ app.get('/RecentOrders', async (req, res) => {
       } else {
         return res.status(400).json({ error: 'Localisation parameter is required for employee type' });
       }
+      if (startDate && endDate) {
+        query += ' AND date BETWEEN $2 AND $3';
+        queryParams.push(startDate, endDate);
+    }
     } else if (codemag) {
       query += ' AND codemag = $1';
       queryParams.push(codemag);

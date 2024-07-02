@@ -364,8 +364,9 @@ fetchOrders(codemag?: string): void {
     .set('sortBy', this.sortBy)
     .set('sortOrder', this.sortOrder)
     .set('page', this.currentPage.toString())
-    .set('rowsPerPage', this.rowsPerPage.toString());
-
+    .set('rowsPerPage', this.rowsPerPage.toString())
+    .set('startDate', this.startDate || '')  // Ensure startDate and endDate are properly set
+    .set('endDate', this.endDate || '');
   if (codemag) {
     params = params.set('codemag', codemag);
   }
@@ -573,7 +574,7 @@ fetchTotalSales(codemag?: string): void {
     .set('type', userData.Type)
     .set('database', userData.baseName)
     .set('startDate', this.startDate || '')  // Ensure startDate and endDate are properly set
-      .set('endDate', this.endDate || '');
+    .set('endDate', this.endDate || '');
   if (codemag) {
     params = params.append('codemag', codemag);
   } else {
