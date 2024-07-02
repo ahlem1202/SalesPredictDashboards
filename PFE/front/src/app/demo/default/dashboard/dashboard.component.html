@@ -153,9 +153,8 @@
   <!--end Table -->
  
   <!-- Table 2 -->
-  <div class="row">
     <!-- Users List -->
-    <div class="col-md-8">
+    <div class="col-md-12">
       <h5 class="mb-3">Users List</h5>
       <div class="card tbl-card">
         <div class="card-body">
@@ -226,18 +225,31 @@
       </div>
     </div>
   
-
-
-
-
-<!-- Pie Chart -->
- 
-<div class="col-md-4">
-  <h5 class="mb-3">User Types Distribution</h5>
-  <div class="card">
-    <div class="card-body">
-      <canvas id="pieChart" width="400" height="400"></canvas>
+    <div class="row">
+      <!-- Pie Chart -->
+      <div class="col-md-6 col-xl-6">
+        <h5 class="mb-3">User Types Distribution</h5>
+        <div class="card">
+          <div class="card-body">
+            <canvas id="pieChart" width="400" height="400"></canvas>
+          </div>
+        </div>
+      </div>
+    
+      <!-- Databases -->
+      <div class="col-md-6 col-xl-6">
+        <h5 class="mb-3">Databases List</h5>
+        <div class="card">
+          <div class="list-group list-group-flush">
+            <a *ngFor="let dbName of baseNames" href="javascript:" class="list-group-item list-group-item-action d-flex align-items-center justify-content-between">
+              <span>{{ dbName.baseName }}</span>
+              <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+              <button class="btn btn-sm btn-danger" (click)="deleteDatabase(dbName.idBase, dbName.baseName)">
+                <i class="material-icons">delete</i>
+              </button>
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
-</div>
+    

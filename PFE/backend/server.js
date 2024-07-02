@@ -153,7 +153,7 @@ app.post('/login', async (req, res) => {
                         password: "khedma123",
                         database: baseName
                     });
-
+                   //   console.log("the database name is", base)
                     // Fetch additional data from the respective table based on the user's ID
                     let additionalDataQuery;
                     if (Type === 'manager') {
@@ -387,7 +387,7 @@ app.post('/reset-password', (req, res) => {
 /**************************************Databases : Creation & uploading ****************************** */
 
 // Route to execute SQL script file and create database
-app.post('/create-database', async (req, res) => { 
+/*app.post('/create-database', async (req, res) => { 
     try {
         const { baseName } = req.body; // Destructuring baseName from the request body
         //console.log('Received baseName:', baseName); // Log the received baseName
@@ -424,8 +424,66 @@ app.post('/create-database', async (req, res) => {
       console.error('Error executing SQL script:', error);
       res.status(500).json({ error: 'Internal Server Error' });
     }
-});
+});*/
+app.post('/create-database', async (req, res) => { 
+    try {
+        const { baseName } = req.body;
+
+        // Create the database dynamically
+        await db.query(`CREATE DATABASE ${baseName};`);
+        console.log(`Database ${baseName} creation command executed.`);
+
+        // Insert the database name into the 'databases' table
+        const insertQuery = 'INSERT INTO databases ("baseName") VALUES ($1)';
+        const insertValues = [baseName];
+        await db.query(insertQuery, insertValues);
+
+        // Function to add a delay
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Add a delay to ensure the database is fully created
+        await delay(2000); // Delay for 2 seconds
+
+        // Verify the database was created
+        const checkDbQuery = `SELECT datname FROM pg_catalog.pg_database WHERE lower(datname) = lower($1);`;
+        const dbExists = await db.query(checkDbQuery, [baseName]);
+        if (dbExists.rowCount === 0) {
+            throw new Error(`Database ${baseName} does not exist after creation.`);
+        }
+        console.log(`Database ${baseName} exists after creation.`);
  
+        // Connect to the newly created database
+        const dbPool = new Client({
+            host: "localhost",
+            user: "postgres",
+            port: 5432,
+            password: "khedma123",
+            database: baseName
+        });
+ 
+        await dbPool.connect();
+        console.log(`Connected to database ${baseName}.`);
+
+        // Read the SQL script file
+        const sqlScript = fs.readFileSync('C:/Users/boual/Desktop/ZAI-pfe/PFE/PFE/backend/scriptBase.sql', { encoding: 'utf-8' });
+
+        // Execute the table creation scripts 
+        await dbPool.query(sqlScript);
+        console.log(`SQL script executed on database ${baseName}.`);
+
+        // Close the connection
+        await dbPool.end();
+        console.log(`Connection to database ${baseName} closed.`);
+
+        res.status(200).json({ message: 'Database created successfully.' });
+    } catch (error) {
+        console.error('Error executing SQL script:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 // Inserting data to client database
 app.post('/insert-data', upload.fields([
     { name: 'client', maxCount: 1 },
@@ -435,8 +493,6 @@ app.post('/insert-data', upload.fields([
     { name: 'vente', maxCount: 1 }
 ]), (req, res) => {
     const { databaseName, userId } = req.body;
-
-
 
     base.connect(async (error, client, release) => {
         if (error) {
@@ -749,7 +805,6 @@ app.get('/api/users', (req, res) => {
         });
     });
 });
-
 
 app.get('/api/users2', (req, res) => {
     const search = req.query.search || ''; 
@@ -1067,7 +1122,7 @@ app.get('/api/manager/count', (req, res) => {
 });
  
 /**************************************Manager Dashboard ****************************** */
-app.get('/totalsales', async (req, res) => {
+/*app.get('/totalsales', async (req, res) => {
     const { codemag, type, localisation } = req.query;
     const userId = req.headers.userid; 
 
@@ -1118,7 +1173,137 @@ app.get('/totalsales', async (req, res) => {
         console.error('Error executing query', error.stack);
         res.status(500).json({ error: 'Internal Server Error' });
     }
+});*/
+/* with date cdt
+app.get('/totalsales', async (req, res) => {
+    const { codemag, type, localisation, startDate, endDate } = req.query;
+    const userId = req.headers.userid; 
+
+    // Base SQL query
+    let query = `
+        SELECT codemag, SUM(total) AS TotalSales 
+        FROM "vente"
+        WHERE nature ='VENTE'
+    `;
+    let queryParams = [];
+
+    // Filter by startDate and endDate if provided
+    if (startDate && endDate) {
+        query += ' AND date BETWEEN $1 AND $2';
+        queryParams.push(startDate, endDate);
+    }
+
+    if (codemag === 'All') {
+        // Calculate total sales for all codemags
+        query = `
+            SELECT SUM(total) AS TotalSales 
+            FROM "vente"
+            WHERE nature ='VENTE'
+        `;
+    } else if (type === 'manager') {
+        // For Manager, filter by codemag if provided, otherwise aggregate total sales for all codemags
+        if (codemag) {
+            query += ' AND codemag = $1';
+            queryParams.push(codemag);
+        }
+        query += ' GROUP BY codemag';
+    } else if (type === 'employee') {
+        // For Employee, filter by localisation and codemag
+        if (localisation) {
+            query += ' AND codemag = $1';  // Adjust this condition based on your specific filtering criteria
+            queryParams.push(localisation);
+        }
+        if (codemag) {
+            query += ' AND codemag = $2 GROUP BY codemag';
+            queryParams.push(codemag);
+        } else {
+            query += ' GROUP BY codemag';
+        }
+    } else {
+        // If userType is not provided or invalid, return an error
+        return res.status(400).json({ error: 'Invalid user type' });
+    }
+
+    try {
+        const { rows } = await base.query(query, queryParams);
+        res.json(rows);  // Send all rows (filtered or not) to the frontend
+    } catch (error) {
+        console.error('Error executing query', error.stack);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});*/
+app.get('/totalsales', async (req, res) => {
+    const { codemag, type, localisation, startDate, endDate } = req.query;
+    const userId = req.headers.userid; 
+console.log("startDate",startDate)
+console.log("endDate",endDate)
+
+    // Base SQL query
+    let query = `
+        SELECT codemag, SUM(total) AS TotalSales 
+        FROM "vente"
+        WHERE nature ='VENTE'
+    `;
+    let queryParams = [];
+
+    // Filter by startDate and endDate if provided
+    if (startDate && endDate) {
+        query += ' AND date BETWEEN $1 AND $2';
+        queryParams.push(startDate, endDate);
+    }
+
+    if (codemag === 'All') {
+        // Calculate total sales for all codemags
+        query = `
+            SELECT SUM(total) AS TotalSales 
+            FROM "vente"
+            WHERE nature ='VENTE'
+        `;
+        if (startDate && endDate) {
+            query += ' AND date BETWEEN $1 AND $2';
+            queryParams = [startDate, endDate];
+        }
+    } else if (type === 'manager') {
+        // For Manager, filter by codemag if provided, otherwise aggregate total sales for all codemags
+        if (codemag) {
+            query += ' AND codemag = $1';
+            queryParams.push(codemag);
+        }
+        if (startDate && endDate) {
+            query += ' AND date BETWEEN $2 AND $3';
+            queryParams.push(startDate, endDate);
+        }
+        query += ' GROUP BY codemag';
+    } else if (type === 'employee') {
+        // For Employee, filter by localisation and codemag
+        if (localisation) {
+            query += ' AND codemag = $1';  // Adjust this condition based on your specific filtering criteria
+            queryParams.push(localisation);
+        }
+        if (codemag) {
+            query += ' AND codemag = $2';
+            queryParams.push(codemag);
+        }
+        if (startDate && endDate) {
+            query += ' AND date BETWEEN $3 AND $4';
+            queryParams.push(startDate, endDate);
+        }
+        query += ' GROUP BY codemag';
+    } else {
+        // If userType is not provided or invalid, return an error
+        return res.status(400).json({ error: 'Invalid user type' });
+    }
+
+    try {
+        const { rows } = await base.query(query, queryParams);
+        res.json(rows);  // Send all rows (filtered or not) to the frontend
+    } catch (error) {
+        console.error('Error executing query', error.stack);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
+
+
 
 app.get('/salesperemployee', async (req, res) => {
     const { codemag, type, localisation } = req.query;
@@ -1507,43 +1692,55 @@ app.get('/monthly_sales_revenue', async (req, res) => {
 });
 
 app.get('/total-sales-monthly', async (req, res) => {
-    const userId = req.headers.userid; // Assuming you pass user ID in headers or adjust as per your setup
-    //const base = userConnections[userId]; // Get the user's specific base connection
-
     const { codemag } = req.query;
-    //console.log(codemag)
+
     try {
-      let result;
-      if (codemag === 'All') {
-        // Calculate total sales for all codemags in the current month
-        result = await base.query(`
-          SELECT 
-            SUM(v.Total) AS total_sales
-          FROM 
-            vente v
-          WHERE 
-            date_part('month', v.Date) = date_part('month', CURRENT_DATE) AND
-            date_part('year', v.Date) = date_part('year', CURRENT_DATE)
-        `);
-      } else {
-        // Calculate total sales for a specific codemag in the current month
-        result = await base.query(`
-          SELECT 
-            SUM(v.Total) AS total_sales
-          FROM 
-            vente v
-          WHERE 
-            v.codemag = $1 AND
-            date_part('month', v.Date) = date_part('month', CURRENT_DATE) AND
-            date_part('year', v.Date) = date_part('year', CURRENT_DATE)
-        `, [codemag]);
-      }
-      res.json(result.rows[0]);
+        let query;
+        let params = [];
+
+        if (codemag === 'All') {
+            query = `
+                 SELECT 
+                    SUM(v.total) AS total_sales
+                FROM 
+                    vente v
+                WHERE 
+                    date_part('month', v.date) = date_part('month', CURRENT_DATE) AND
+                    date_part('year', v.date) = date_part('year', CURRENT_DATE)
+            `;
+        } else {
+            query = `
+                SELECT 
+                    SUM(v.total) AS total_sales
+                FROM 
+                    vente v
+                WHERE 
+                    v.codemag = $1 AND
+                    date_part('month', v.date) = date_part('month', CURRENT_DATE) AND
+                    date_part('year', v.date) = date_part('year', CURRENT_DATE)
+            `;
+            params.push(codemag);
+        }
+
+       
+
+        const result = await base.query(query, params);
+
+
+        if (result.rows.length > 0) {
+            res.json(result.rows[0]);
+        } else {
+            console.log("No matching rows found.");
+            res.json({ total_sales: null });
+        }
     } catch (error) {
-      console.error('Error fetching total sales:', error);
-      res.status(500).send('Server error');
+        console.error('Error fetching total sales:', error);
+        res.status(500).send(`Server error: ${error.message}`);
     }
 });
+
+
+
 
 // Endpoint to get Codemag names
 app.get('/codemags', async (req, res) => {

@@ -235,7 +235,6 @@ ngOnInit(): void {
     this.fetchOrders();
     this.fetchTotalClient();
     //the filter
-    this.fetchDataWithDateFilter();
     this.fetchSalesData();
     this.fetchMonthlySalesRevenue();
     this.fetchSalesPerEmployee();
@@ -347,17 +346,14 @@ formatChartData(data: any) {
 
 //*****filter-date******
 applyDateFilter(): void {
-    this.fetchDataWithDateFilter();
+  this.fetchTotalSales();
+  this.fetchTop10SalesByProduct();
+  this.fetchDataLOYALCUSTOMER();
+  this.fetchOrders();
+  this.fetchTotalClient();
 }
 
-fetchDataWithDateFilter(): void {
-    this.fetchTotalSales();
-    this.fetchTop10SalesByProduct();
-    this.fetchDataLOYALCUSTOMER();
-    this.fetchOrders();
-    this.fetchTotalClient();
 
-}
 
 fetchOrders(codemag?: string): void {
   const userData = this.authService.getUserData();
@@ -575,8 +571,9 @@ fetchTotalSales(codemag?: string): void {
 
   let params = new HttpParams()
     .set('type', userData.Type)
-    .set('database', userData.baseName);
-  
+    .set('database', userData.baseName)
+    .set('startDate', this.startDate || '')  // Ensure startDate and endDate are properly set
+      .set('endDate', this.endDate || '');
   if (codemag) {
     params = params.append('codemag', codemag);
   } else {
