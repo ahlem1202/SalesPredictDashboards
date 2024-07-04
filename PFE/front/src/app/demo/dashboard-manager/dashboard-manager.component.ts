@@ -258,7 +258,7 @@ fetchCodemags(): void {
       }
     );
 }
-
+/*
 onFilterChange(newCodemag: string): void {
   this.selectedCodemag = newCodemag;
   this.fetchTotalSales(newCodemag === 'All' ? null : newCodemag);
@@ -271,7 +271,7 @@ onFilterChange(newCodemag: string): void {
   this.fetchDataLOYALCUSTOMER(newCodemag);
   this.fetchTotalSalesMonthly(newCodemag === 'All' ? null : newCodemag);
 
-}
+}*/
 
 fetchSalesPerEmployee(codemag?: string): void {
   let params = codemag ? { codemag: codemag } : {};
@@ -288,11 +288,13 @@ fetchSalesPerEmployee(codemag?: string): void {
       this.chartOptionsPie.labels = labelsData;
     });
 }
-
+/*
 fetchMonthlySalesRevenue(codemag?: string): void {
   const userData = this.authService.getUserData();
   const headers = new HttpHeaders().set('userid', userData.id.toString()); // Convert userId to string
-
+  let params = new HttpParams()
+  .set('startDate', this.startDate || '')  // Ensure startDate and endDate are properly set
+  .set('endDate', this.endDate || '');
   let url = 'http://localhost:3000/monthly_sales_revenue';
   if (codemag) {
     url += `?codemag=${codemag}`;
@@ -328,7 +330,49 @@ fetchMonthlySalesRevenue(codemag?: string): void {
     };
   });
 }
+*/
+fetchMonthlySalesRevenue(codemag?: string): void {
+  const userData = this.authService.getUserData();
+  const headers = new HttpHeaders().set('userid', userData.id.toString()); // Convert userId to string
+  let params = new HttpParams()
+    .set('startDate', this.startDate || '')  // Ensure startDate and endDate are properly set
+    .set('endDate', this.endDate || '');
+  let url = 'http://localhost:3000/monthly_sales_revenue';
 
+  if (codemag) {
+    params = params.set('codemag', codemag);
+  }
+
+  this.http.get(url, { headers, params }).subscribe((data: any) => {
+    const formattedData = this.formatChartData(data);
+    this.chartOptions = {
+      series: [{
+        name: 'Monthly Sales Revenue',
+        data: formattedData.series
+      }],
+      chart: {
+        type: 'line',
+        height: 350
+      },
+      xaxis: {
+        type: 'datetime',
+        categories: formattedData.categories
+      },
+      yaxis: {
+        labels: {
+          formatter: (val: number) => Math.floor(val).toString() + ' DT'
+        }
+      },
+      stroke: {
+        curve: 'smooth'
+      },
+      title: {
+        text: 'Monthly Sales Revenue',
+        align: 'left'
+      }
+    };
+  });
+}
 formatChartData(data: any) {
   
   const categories = data.map((item: any) => {
@@ -345,17 +389,46 @@ formatChartData(data: any) {
 }
 
 //*****filter-date******
+/*
 applyDateFilter(): void {
   this.fetchTotalSales();
-  this.fetchTop10SalesByProduct();
-  this.fetchDataLOYALCUSTOMER();
+  this.fetchMonthlySalesRevenue();
+  this.fetchTransferts();
   this.fetchOrders();
-  this.fetchTotalClient();
+  this.fetchDataLOYALCUSTOMER();
+}
+*/
+onFilterChange(newCodemag: string): void {
+  this.selectedCodemag = newCodemag;
+  this.fetchDataForFilters();
+}
+
+applyDateFilter(): void {
+  this.fetchDataForFilters();
+}
+
+fetchDataForFilters(): void {
+  // Pass startDate and endDate to the functions based on selectedCodemag
+  if (this.selectedCodemag === 'All') {
+    this.fetchTotalSales();
+    this.fetchOrders();
+    this.fetchMonthlySalesRevenue();
+    this.fetchTransferts();
+    this.fetchDataLOYALCUSTOMER();
+    this.fetchTotalSalesMonthly();
+  } else {
+    this.fetchTotalSales(this.selectedCodemag);
+    this.fetchOrders(this.selectedCodemag);
+    this.fetchMonthlySalesRevenue(this.selectedCodemag);
+    this.fetchTransferts(this.selectedCodemag);
+    this.fetchDataLOYALCUSTOMER(this.selectedCodemag);
+    this.fetchTotalSalesMonthly(this.selectedCodemag);
+  }
 }
 
 
 
-fetchOrders(codemag?: string): void {
+fetchOrders(codemag?: string, startDate?: Date, endDate?: Date): void {
   const userData = this.authService.getUserData();
   const headers = new HttpHeaders().set('userid', userData.id.toString());
 
@@ -412,8 +485,9 @@ fetchTransferts(codemag?: string): void {
     .set('sortBy', this.sortByTransferts)
     .set('sortOrder', this.sortOrderTransferts)
     .set('page', this.currentPageTransferts.toString())
-    .set('rowsPerPage', this.rowsPerPageTransferts.toString());
-
+    .set('rowsPerPage', this.rowsPerPageTransferts.toString())
+    .set('startDate', this.startDate || '')  // Ensure startDate and endDate are properly set
+    .set('endDate', this.endDate || '');
   if (codemag) {
     params = params.set('codemag', codemag);
   }
@@ -489,7 +563,9 @@ fetchDataLOYALCUSTOMER(codemag?: string): void {
   const userData = this.authService.getUserData();
   const headers = new HttpHeaders().set('userid', userData.id.toString()); // Convert userId to string
 
-  let params = new HttpParams();
+  let params = new HttpParams()
+  .set('startDate', this.startDate || '')  // Ensure startDate and endDate are properly set
+  .set('endDate', this.endDate || '');
 
   if (codemag) {
     console.log('codemag front', codemag);
@@ -567,6 +643,37 @@ fetchTotalClient(): void {
 
 fetchTotalSales(codemag?: string): void {
   const userData = this.authService.getUserData();
+  const headers = new HttpHeaders().set('userid', userData.id.toString());
+  
+  let params = new HttpParams()
+    .set('type', userData.Type)
+    .set('database', userData.baseName)
+    .set('startDate', this.startDate || '')
+    .set('endDate', this.endDate || '');
+  if (codemag) {
+    params = params.append('codemag', codemag);
+  } else {
+    params = params.append('codemag', 'All');
+  }
+  
+  this.http.get<any[]>('http://localhost:3000/totalsales', { params, headers })
+    .subscribe(
+      (response) => {
+        if (response.length > 0) {
+          this.totalSales = parseFloat(response[0].totalsales);
+        } else {
+          this.totalSales = null;
+        }
+      },
+      (error) => {
+        console.error('Error fetching total sales:', error);
+      }
+    );
+}
+
+/*
+fetchTotalSales(startDate?: Date, endDate?: Date, codemag?: string): void {
+  const userData = this.authService.getUserData();
   const headers = new HttpHeaders().set('userid', userData.id.toString()); // Convert userId to string
   console.log(headers);
 
@@ -594,7 +701,7 @@ fetchTotalSales(codemag?: string): void {
         console.error('Error fetching total sales:', error);
       }
     );
-}
+}*/
 
 fetchTotalSalesMonthly(codemag?: string): void {
   const userData = this.authService.getUserData();
