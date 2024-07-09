@@ -39,7 +39,7 @@
             <span *ngIf="task.title === 'Total Sales :'">{{ totalSales | currency:'TND':'symbol':'1.3-3' }}</span>
             <span *ngIf="task.title === 'Number of Sales (Transactions) :'">{{ totalSalesCount}}</span>
             <span *ngIf="task.title === 'Total Quantity Sold :'">{{ TotalQuantitySold}}</span>
-            <span *ngIf="task.title === 'Total Monthly Sales :'">{{ totalSalesMonthly | currency:'TND':'symbol':'1.3-3' }}</span>
+            <span *ngIf="task.title === 'Current Month Sales :'">{{ totalSalesMonthly | currency:'TND':'symbol':'1.3-3' }}</span>
           <!--  <span *ngIf="task.title === 'Total Sales :'">{{ totalSales | removeCurrencySymbol }} TND</span>
          --> </h4>
           </div>
@@ -133,19 +133,23 @@
     
     <!-- Repeat Customers Donut Chart -->
     <div class="col-md-6 col-xl-6">
-      <h5 class="mb-3">Repeat /Infrequent Customers</h5>
+      <h5 class="mb-3">Recent Customer Engagement Analysis</h5>
       <div *ngIf="chartOptionsDonuts">
-        <apx-chart
-          [series]="chartOptionsDonuts.series"
-          [chart]="chartOptionsDonuts.chart"
-          [labels]="chartOptionsDonuts.labels"
-          [fill]="chartOptionsDonuts.fill"
-          [dataLabels]="chartOptionsDonuts.dataLabels"
-          [responsive]="chartOptionsDonuts.responsive"
-        ></apx-chart>
+          <apx-chart
+              [series]="chartOptionsDonuts.series"
+              [chart]="chartOptionsDonuts.chart"
+              [labels]="chartOptionsDonuts.labels"
+              [fill]="chartOptionsDonuts.fill"
+              [dataLabels]="chartOptionsDonuts.dataLabels"
+              [responsive]="chartOptionsDonuts.responsive"
+          ></apx-chart>
+          <div class="no-data-message" *ngIf="chartOptionsDonuts.series && chartOptionsDonuts.series[0] === 1">
+              <span class="error-message">No Repeat and Infrequent Customers for this date range. Choose another date.</span>
+          </div>
       </div>
-    </div>
   </div>
+  
+    
   
 <!-- Line chart -->
     <div *ngIf="chartOptions">

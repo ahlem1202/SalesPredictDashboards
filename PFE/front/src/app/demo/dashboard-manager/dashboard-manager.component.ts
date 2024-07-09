@@ -216,7 +216,7 @@ card = [
       // Other properties...
     },
     {
-      title: 'Total Monthly Sales :'
+      title: 'Current Month Sales :'
       // Other properties...
     },
     {
@@ -258,20 +258,6 @@ fetchCodemags(): void {
       }
     );
 }
-/*
-onFilterChange(newCodemag: string): void {
-  this.selectedCodemag = newCodemag;
-  this.fetchTotalSales(newCodemag === 'All' ? null : newCodemag);
-  this.fetchTop10SalesByProduct();
-  this.fetchOrders(newCodemag);
-  this.fetchSalesPerEmployee(newCodemag);
-  this.fetchSalesData(newCodemag);
-  this.fetchMonthlySalesRevenue(newCodemag);
-  this.fetchTransferts(newCodemag);
-  this.fetchDataLOYALCUSTOMER(newCodemag);
-  this.fetchTotalSalesMonthly(newCodemag === 'All' ? null : newCodemag);
-
-}*/
 
 fetchSalesPerEmployee(codemag?: string): void {
   let params = codemag ? { codemag: codemag } : {};

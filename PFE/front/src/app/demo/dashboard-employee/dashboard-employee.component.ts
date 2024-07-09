@@ -111,7 +111,7 @@ card = [
     title: 'Total Quantity Sold :'
   },
   {
-    title: 'Total Monthly Sales :'
+    title: 'Current Month Sales :'
   }
 ];
 /***bar chart vertical  */
@@ -271,14 +271,13 @@ totalSalesMonthly: number | null = null;
 
   }
 
-  applyDateFilter(): void {
-  }
-
   fetchTotalSales(): void {
     const userData = this.authService.getUserData();
     const params = new HttpParams()
       .set('type', userData.Type)
       .set('database', userData.baseName)
+      .set('startDate', this.startDate || '')
+      .set('endDate', this.endDate || '')
       .set('localisation', userData.localisation); // Add the localisation parameter
 
     this.http.get<any[]>('http://localhost:3000/totalsales', { params })
@@ -297,33 +296,37 @@ totalSalesMonthly: number | null = null;
       );
   }
 
-  fetchTotalSalesCount(): void{
+  fetchTotalSalesCount(): void {
     const userData = this.authService.getUserData();
     const params = new HttpParams()
-      .set('localisation', userData.localisation); // Add the localisation parameter
-  
-    this.http.get<any[]>('http://localhost:3000/TotalSalesCount',{params})
-      .subscribe(
-        (response) => {
-         // console.log('Total sales API response:', response);
-          if (response.length > 0) {
-            this.totalSalesCount = parseFloat(response[0].totalvente); // Convert to number
-          } else {
-            this.totalSalesCount = null;  // No data found
-          }
-          //console.log('Total sales:', this.totalSales);
-        },
-        (error) => {
-          console.error('Error fetching total sales:', error);
-        }
-      );
+        .set('localisation', userData.localisation)
+        .set('startDate', this.startDate || '')
+        .set('endDate', this.endDate || ''); // Add the localisation parameter
+    
+    this.http.get<any[]>('http://localhost:3000/TotalSalesCount', { params })
+        .subscribe(
+            (response) => {
+                // console.log('Total sales API response:', response);
+                if (response.length > 0) {
+                    this.totalSalesCount = parseFloat(response[0].totalvente); // Convert to number
+                } else {
+                    this.totalSalesCount = null;  // No data found
+                }
+                // console.log('Total sales:', this.totalSales);
+            },
+            (error) => {
+                console.error('Error fetching total sales:', error);
+            }
+        );
+}
 
-  }
 
   fetchTotalQuantitySold(): void {
     const userData = this.authService.getUserData();
     const params = new HttpParams()
-      .set('localisation', userData.localisation); // Add the localisation parameter
+      .set('localisation', userData.localisation)
+      .set('startDate', this.startDate || '')
+        .set('endDate', this.endDate || ''); // Add the localisation parameter
 
     this.http.get<any[]>('http://localhost:3000/TotalQuantitySold',{params})
       .subscribe(
@@ -374,9 +377,9 @@ totalSalesMonthly: number | null = null;
       .set('sortOrder', this.sortOrder)
       .set('page', this.currentPage.toString())
       .set('rowsPerPage', this.rowsPerPage.toString())
-      //.set('startDate', this.startDate || '')
-      //.set('endDate', this.endDate || '')
       .set('type', userData.Type)
+      .set('startDate', this.startDate || '')  // Ensure startDate and endDate are properly set
+      .set('endDate', this.endDate || '')
       .set('localisation', userData.localisation); // Add the localisation parameter
    
   
@@ -414,6 +417,8 @@ totalSalesMonthly: number | null = null;
     const userData = this.authService.getUserData();
     const params = new HttpParams()
       .set('type', userData.Type)
+      .set('startDate', this.startDate || '')  // Ensure startDate and endDate are properly set
+      .set('endDate', this.endDate || '')
       .set('localisation', userData.localisation); // Add the localisation parameter
 
   
@@ -428,42 +433,58 @@ totalSalesMonthly: number | null = null;
  
   fetchMonthlySalesRevenue(): void {
     const userData = this.authService.getUserData();
-    const params = new HttpParams()
-      .set('type', userData.Type)
-      .set('localisation', userData.localisation); // Add the localisation parameter
+    let params = new HttpParams().set('type', userData.Type).set('localisation', userData.localisation);
+
+    // Add date parameters only if they are provided
+    if (this.startDate) {
+        params = params.set('startDate', this.startDate);
+    }
+    if (this.endDate) {
+        params = params.set('endDate', this.endDate);
+    }
 
     let url = 'http://localhost:3000/monthly_sales_revenue';
-  
-    this.http.get(url,{params}).subscribe((data: any) => {
-      const formattedData = this.formatChartData(data);
-      this.chartOptions = {
-        series: [{
-          name: 'Monthly Sales Revenue',
-          data: formattedData.series
-        }],
-        chart: {
-          type: 'line',
-          height: 350
-        },
-        xaxis: {
-          type: 'datetime',
-          categories: formattedData.categories
-        },
-        yaxis: {
-          labels: {
-            formatter: (val: number) => Math.floor(val).toString() + ' DT'
-          }
-        },
-        stroke: {
-          curve: 'smooth'
-        },
-        title: {
-          text: 'Monthly Sales Revenue',
-          align: 'left'
-        }
-      };
+
+    // Log parameters to ensure they are correctly set
+    console.log('Params:', params.toString());
+
+    this.http.get(url, { params }).subscribe((data: any) => {
+        const formattedData = this.formatChartData(data);
+        this.chartOptions = {
+            series: [{
+                name: 'Monthly Sales Revenue',
+                data: formattedData.series
+            }],
+            chart: {
+                type: 'line',
+                height: 350
+            },
+            xaxis: {
+                type: 'datetime',
+                categories: formattedData.categories
+            },
+            yaxis: {
+                labels: {
+                    formatter: (val: number) => Math.floor(val).toString() + ' DT'
+                }
+            },
+            stroke: {
+                curve: 'smooth'
+            },
+            title: {
+                text: 'Monthly Sales Revenue',
+                align: 'left'
+            }
+        };
+    }, error => {
+        // Log the error
+        console.error('Error fetching monthly sales revenue:', error);
     });
-  }
+}
+
+
+
+
 
   formatChartData(data: any) {
     const categories = data.map((item: any) => {
@@ -482,58 +503,93 @@ totalSalesMonthly: number | null = null;
   fetchRepeatCustomers(): void {
     const userData = this.authService.getUserData();
     const params = new HttpParams()
-      .set('localisation', userData.localisation); 
+        .set('startDate', this.startDate || '')
+        .set('endDate', this.endDate || '')
+        .set('localisation', userData.localisation);
+
     this.http.get<any>('http://localhost:3000/api/repeat-customer-data', { params })
-      .subscribe(
-        (data) => {
-          //console.log("infrequentCustomers", data.infrequentCustomers);
-  
-          const repeatCustomers = parseInt(data.repeatCustomers, 10); // Convert string to integer
-          const infrequentCustomers = parseInt(data.infrequentCustomers, 10); 
-  
-          console.log("Data received:", data);
-          console.log("repeatCustomers ", repeatCustomers )
-          console.log("infrequentCustomers",infrequentCustomers)
-  
-          this.chartOptionsDonuts = {
-            series: [repeatCustomers, infrequentCustomers],
-            chart: {
-              width: 420,
-              type: "donut"
-            },
-            labels: ['Repeat Customers', 'Infrequent Customers'],
-            dataLabels: {
-              enabled: false
-            },
-            fill: {
-              type: "gradient"
-            },          
-            colors: ['#00ff00', '#ff0000'], // Green for repeat customers, red for infrequent customers
-            legend: {
-              formatter: function(val, opts) {
-                return val + " - " + opts.w.globals.series[opts.seriesIndex];
-              }
-            },
-            responsive: [
-              {
-                breakpoint: 480,
-                options: {
-                  chart: {
-                    width: 200
-                  },
-                  legend: {
-                    position: "bottom"
-                  }
+        .subscribe(
+            (data) => {
+                const repeatCustomers = parseInt(data.repeatCustomers, 10) || 0;
+                const infrequentCustomers = parseInt(data.infrequentCustomers, 10) || 0;
+
+                if (repeatCustomers === 0 && infrequentCustomers === 0) {
+                    // Display message for no data available
+                    this.chartOptionsDonuts = {
+                        series: [1],  // Provide a dummy series to avoid error, since no data to display
+                        chart: {
+                            width: 420,
+                            type: "donut"
+                        },
+                        labels: ['No Data Available'],
+                        dataLabels: {
+                            enabled: false
+                        },
+                        fill: {
+                            type: "gradient"
+                        },
+                        colors: ['#999999'], // Gray color for no data message
+                        legend: {
+                            show: false
+                        },
+                        responsive: [
+                            {
+                                breakpoint: 480,
+                                options: {
+                                    chart: {
+                                        width: 200
+                                    },
+                                    legend: {
+                                        position: "bottom"
+                                    }
+                                }
+                            }
+                        ]
+                    };
+                } else {
+                    // Display chart with actual data
+                    this.chartOptionsDonuts = {
+                        series: [repeatCustomers, infrequentCustomers],
+                        chart: {
+                            width: 420,
+                            type: "donut"
+                        },
+                        labels: ['Repeat Customers', 'Infrequent Customers'],
+                        dataLabels: {
+                            enabled: false
+                        },
+                        fill: {
+                            type: "gradient"
+                        },
+                        colors: ['#00ff00', '#ff0000'], // Green for repeat customers, red for infrequent customers
+                        legend: {
+                            formatter: function (val, opts) {
+                                return val + " - " + opts.w.globals.series[opts.seriesIndex];
+                            }
+                        },
+                        responsive: [
+                            {
+                                breakpoint: 480,
+                                options: {
+                                    chart: {
+                                        width: 200
+                                    },
+                                    legend: {
+                                        position: "bottom"
+                                    }
+                                }
+                            }
+                        ]
+                    };
                 }
-              }
-            ]
-          };
-        },
-        (error) => {
-          console.error('Error fetching repeat customers data:', error);
-        }
-      );
-  }
+            },
+            (error) => {
+                console.error('Error fetching repeat customers data:', error);
+            }
+        );
+}
+
+  
   
   fetchFamilles(): void {
     this.http.get<Famille[]>('http://localhost:3000/famille')
@@ -576,6 +632,15 @@ onPageChangeStock(page: number): void {
 }
   onFilterChange(): void {
     this.filterStockData();
+  }
+  applyDateFilter(): void {
+    this.fetchTotalSales();
+    this.fetchTotalSalesCount();
+    this.fetchTotalQuantitySold();
+    this.fetchOrders();
+    this.fetchSalesPerEmployee();
+    this.fetchRepeatCustomers();
+    this.fetchMonthlySalesRevenue();
   }
 
   filterStockData(): void {
