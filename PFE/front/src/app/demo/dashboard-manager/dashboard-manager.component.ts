@@ -33,6 +33,7 @@ export type ChartOptions = {
   title: ApexTitleSubtitle;
 };
 
+
 interface TransfertData {
   codemag: string;
   nature: string;
@@ -78,8 +79,8 @@ interface TotalSalesResponse {
 
 export class DashboardManagerComponent implements OnInit {
   tableData: any[] = [];
-  startDate: string;
-  endDate: string;
+  startDate: string ;// Set default start date
+  endDate: string ;
   totalSales: number | null = null;
   totalSalesMonthly: number | null = null; // To store the sales data
   totalVente:number | null = null;
@@ -168,7 +169,7 @@ codemags: string[] = [];
 noDataFound: boolean = false;
 
  constructor(private http: HttpClient,private authService: AuthService,private titleService: Title) { 
-  this.chartOptionsPie = {
+  /*this.chartOptionsPie = {
     series: [],
     chart: {
       width: 380,
@@ -188,7 +189,31 @@ noDataFound: boolean = false;
         }
       }
     ]
+  };*/
+  this.chartOptionsPie = {
+    series: [],
+    chart: {
+      width: '100%', // Set chart width to 100% of container
+      height: '800px', // Set chart height as needed
+      type: 'pie'
+    },
+    labels: [],
+    colors: ['#66CCCC', '#FF6666', '#66FF66', '#6666FF', '#FF66CC', '#66CCFF', '#FFFF66', '#CC66FF', '#FFCC66', '#66FFCC', '#CCFF66', '#FF6666', '#66FF66', '#6666FF', '#FF66CC', '#66CCFF', '#FFFF66', '#CC66FF', '#FFCC66', '#66FFCC'],    responsive: [
+      {
+        breakpoint: 480,
+        options: {
+          chart: {
+            width: '90%', // Adjust width for smaller screens if necessary
+            height: '900px' // Adjust height for smaller screens if necessary
+          },
+          legend: {
+            position: 'bottom'
+          }
+        }
+      }
+    ]
   };
+
 
   this.chartOptions = {
     series: [],
@@ -259,64 +284,71 @@ fetchCodemags(): void {
     );
 }
 
+/*
 fetchSalesPerEmployee(codemag?: string): void {
-  let params = codemag ? { codemag: codemag } : {};
+  let params = new HttpParams();
   const userData = this.authService.getUserData();
-  const headers = new HttpHeaders().set('userid', userData.id.toString()); // Convert userId to string
 
+  params = params.set('type', userData.Type);
+  params = params.set('startDate', this.startDate || '');
+  params = params.set('endDate', this.endDate || '');
 
-  this.http.get<any[]>('http://localhost:3000/salesperemployee', { params, headers })
+  if (userData.Type === 'employee') {
+      params = params.set('localisation', userData.localisation);
+  } else {
+      params = params.set('codemag', codemag || this.selectedCodemag || '');
+  }
+
+  this.http.get<any[]>('http://localhost:3000/salesperemployee', { params })
+      .subscribe(data => {
+          if (data.length === 0) {
+              // Handle case where no data is returned, e.g., show a message
+              console.log('No data available');
+              return;
+          }
+          const seriesData: number[] = data.map(item => parseFloat(item.salesperemployee));
+          const labelsData: string[] = data.map(item => item.vendeur);
+          this.chartOptionsPie.series = seriesData;
+          this.chartOptionsPie.labels = labelsData;
+      }, error => {
+          console.error('Error fetching sales per employee:', error);
+          // Handle error, e.g., show an error message
+      });
+}*/
+fetchSalesPerEmployee(codemag?: string): void {
+  const userData = this.authService.getUserData();
+  let params = new HttpParams().set('type', userData.Type)
+  .set('startDate', this.startDate || '')
+  .set('endDate', this.endDate || '');
+
+  if (codemag) {
+    params = params.set('codemag', codemag);
+  }
+
+  if (userData.Type === 'employee') {
+    params = params.set('localisation', userData.localisation);
+  } else {
+    params = params.set('codemag', this.selectedCodemag || '');
+  }
+
+  this.http.get<any[]>('http://localhost:3000/salesperemployee', { params })
     .subscribe(data => {
-      const seriesData: number[] = data.map(item => parseFloat(item.salesperemployee));
-      const labelsData: string[] = data.map(item => item.vendeur);
+      // Filter out null vendeur entries
+      data = data.filter(item => item.vendeur !== null);
 
+      // Map data to extract series and labels
+      const seriesData: number[] = data.map(item => parseFloat(item.salesperemployee));
+      const labelsData: string[] = data.map(item => `${item.vendeur} - ${item.codemag}`);
+
+      // Update chart options
       this.chartOptionsPie.series = seriesData;
       this.chartOptionsPie.labels = labelsData;
     });
 }
-/*
-fetchMonthlySalesRevenue(codemag?: string): void {
-  const userData = this.authService.getUserData();
-  const headers = new HttpHeaders().set('userid', userData.id.toString()); // Convert userId to string
-  let params = new HttpParams()
-  .set('startDate', this.startDate || '')  // Ensure startDate and endDate are properly set
-  .set('endDate', this.endDate || '');
-  let url = 'http://localhost:3000/monthly_sales_revenue';
-  if (codemag) {
-    url += `?codemag=${codemag}`;
-  }
 
-  this.http.get(url,{headers}).subscribe((data: any) => {
-    const formattedData = this.formatChartData(data);
-    this.chartOptions = {
-      series: [{
-        name: 'Monthly Sales Revenue',
-        data: formattedData.series
-      }],
-      chart: {
-        type: 'line',
-        height: 350
-      },
-      xaxis: {
-        type: 'datetime',
-        categories: formattedData.categories
-      },
-      yaxis: {
-        labels: {
-          formatter: (val: number) => Math.floor(val).toString() + ' DT'
-        }
-      },
-      stroke: {
-        curve: 'smooth'
-      },
-      title: {
-        text: 'Monthly Sales Revenue',
-        align: 'left'
-      }
-    };
-  });
-}
-*/
+
+
+
 fetchMonthlySalesRevenue(codemag?: string): void {
   const userData = this.authService.getUserData();
   const headers = new HttpHeaders().set('userid', userData.id.toString()); // Convert userId to string
@@ -402,6 +434,7 @@ fetchDataForFilters(): void {
     this.fetchTransferts();
     this.fetchDataLOYALCUSTOMER();
     this.fetchTotalSalesMonthly();
+    this.fetchSalesPerEmployee();
   } else {
     this.fetchTotalSales(this.selectedCodemag);
     this.fetchOrders(this.selectedCodemag);
@@ -409,6 +442,7 @@ fetchDataForFilters(): void {
     this.fetchTransferts(this.selectedCodemag);
     this.fetchDataLOYALCUSTOMER(this.selectedCodemag);
     this.fetchTotalSalesMonthly(this.selectedCodemag);
+    this.fetchSalesPerEmployee(this.selectedCodemag);
   }
 }
 
@@ -430,7 +464,7 @@ fetchOrders(codemag?: string, startDate?: Date, endDate?: Date): void {
     params = params.set('codemag', codemag);
   }
 
-  console.log('Fetching orders with parameters:', params.toString());
+  //console.log('Fetching orders with parameters:', params.toString());
 
   this.http.get<Order[]>('http://localhost:3000/RecentOrders', { params, headers }).subscribe(
     (response: any) => {
@@ -477,7 +511,7 @@ fetchTransferts(codemag?: string): void {
   if (codemag) {
     params = params.set('codemag', codemag);
   }
-  console.log('Fetching transferts with parameters:', params.toString());
+ // console.log('Fetching transferts with parameters:', params.toString());
 
   this.http.get<{ transferts: TransfertData[], total: number }>('http://localhost:3000/transfert', { params, headers }).subscribe(
     (response) => {

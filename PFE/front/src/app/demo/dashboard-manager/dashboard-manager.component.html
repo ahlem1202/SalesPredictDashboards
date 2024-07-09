@@ -272,43 +272,21 @@
 <div class="row">
   <div class="col-md-6 col-xl-6">
     <h5 class="mb-3">Sales per employee</h5>
-    <div *ngIf="chartOptionsPie">
+    <div *ngIf="chartOptionsPie.series.length > 0">
       <apx-chart
         [series]="chartOptionsPie.series"
         [chart]="chartOptionsPie.chart"
         [labels]="chartOptionsPie.labels"
+        [colors]="chartOptionsPie.colors"
         [responsive]="chartOptionsPie.responsive"
       ></apx-chart>
     </div>
-  </div>
-
-<!-- Table for Store Sales -->
-  <div class="col-md-6 col-xl-6">
-    <h5 class="mb-3 text-center">Store Sales</h5>
-    <div class="card tbl-card">
-      <div class="card-body">
-        <div class="table-responsive">
-          <table class="table table-hover table-borderless mb-0">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Store Name</th>
-                <th>Total Sales</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let row of tableData">
-                <td>{{ row.id }}</td>
-                <td>{{ row.codemag_id }}</td>
-                <td>{{ row.totalsales | currency:'TND':'symbol':'1.3-3' }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+    <div *ngIf="chartOptionsPie.series.length === 0">
+      <p>No data available</p>
     </div>
   </div>
 </div>
+
 
 
 <!--

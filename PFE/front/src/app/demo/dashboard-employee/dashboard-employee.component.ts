@@ -349,6 +349,8 @@ totalSalesMonthly: number | null = null;
     const userData = this.authService.getUserData();
     const params = new HttpParams()
       .set('type', userData.Type)
+      .set('startDate', this.startDate || '')
+      .set('endDate', this.endDate || '')
       .set('localisation', userData.localisation); // Add the localisation parameter
   
     this.http.get<TopSale[]>('http://localhost:3000/topsales',{params})
@@ -369,7 +371,7 @@ totalSalesMonthly: number | null = null;
     return   tooltipText +" DT";
   }
 
-  fetchOrders(): void {
+  /*fetchOrders(): void {
     const userData = this.authService.getUserData();
     let params = new HttpParams()
       .set('search', this.searchQuery)
@@ -394,8 +396,33 @@ totalSalesMonthly: number | null = null;
         console.error('Error retrieving recent orders', error);
       }
     );
-  }
+  }*/
 
+    fetchOrders(): void {
+      const userData = this.authService.getUserData();
+      let params = new HttpParams()
+        .set('search', this.searchQuery)
+        .set('sortBy', this.sortBy)
+        .set('sortOrder', this.sortOrder)
+        .set('page', this.currentPage.toString())
+        .set('rowsPerPage', this.rowsPerPage.toString())
+        .set('type', userData.Type)
+        .set('startDate', this.startDate || '')  // Ensure startDate and endDate are properly set
+        .set('endDate', this.endDate || '')
+        .set('localisation', userData.localisation);
+  
+      this.http.get<Order[]>('http://localhost:3000/RecentOrders', { params }).subscribe(
+        (response: any) => {
+          this.orderList = response.orders;
+          this.totalPages = Math.ceil(response.total / this.rowsPerPage);
+          this.paginatedOrders = this.orderList; // Directly assign the fetched orders
+        },
+        (error: HttpErrorResponse) => {
+          console.error('Error retrieving recent orders', error);
+        }
+      );
+  }
+  
   onSortChange(sortBy: string): void {
     this.sortBy = sortBy;
     this.sortOrder = this.sortOrder === 'ASC' ? 'DESC' : 'ASC';
@@ -641,6 +668,8 @@ onPageChangeStock(page: number): void {
     this.fetchSalesPerEmployee();
     this.fetchRepeatCustomers();
     this.fetchMonthlySalesRevenue();
+    this.fetchAVGDailySales();
+    this.fetchTop10SalesByProduct();
   }
 
   filterStockData(): void {
@@ -665,6 +694,8 @@ onPageChangeStock(page: number): void {
   fetchAVGDailySales():void{
   const userData = this.authService.getUserData();
     const params = new HttpParams()
+    .set('startDate', this.startDate || '')  // Ensure startDate and endDate are properly set
+      .set('endDate', this.endDate || '')
       .set('localisation', userData.localisation); // Add the localisation parameter
       //console.log("this.localisation",params)
       let url = 'http://localhost:3000/AvgDailySales';
