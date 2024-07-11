@@ -99,7 +99,7 @@ export class DashboardManagerComponent implements OnInit {
   paginatedOrderList: Order[] = [];
   searchQuery = '';
   sortBy = 'date';
-  sortOrder = 'desc';
+  sortOrder = 'ASC';
     currentPage = 1;
     totalPages = 1;
     rowsPerPage = 4;
@@ -146,7 +146,7 @@ export class DashboardManagerComponent implements OnInit {
     name: 'cool', // Example name
     selectable: true, // Example selectable property
     group: ScaleType.Ordinal, // Use ScaleType.Ordinal instead of 'Ordinal'
-    domain: ['#AAAAAA', '#C7B42C', '#5AA454']
+    domain: ['#E65F5C', '#FABC3C', '#69B578']
   };
 
   schemeType: ScaleType = ScaleType.Linear; // Use ScaleType.Linear or another valid value
@@ -169,27 +169,6 @@ codemags: string[] = [];
 noDataFound: boolean = false;
 
  constructor(private http: HttpClient,private authService: AuthService,private titleService: Title) { 
-  /*this.chartOptionsPie = {
-    series: [],
-    chart: {
-      width: 380,
-      type: "pie"
-    },
-    labels: [],
-    responsive: [
-      {
-        breakpoint: 480,
-        options: {
-          chart: {
-            width: 200
-          },
-          legend: {
-            position: "bottom"
-          }
-        }
-      }
-    ]
-  };*/
   this.chartOptionsPie = {
     series: [],
     chart: {
@@ -198,7 +177,8 @@ noDataFound: boolean = false;
       type: 'pie'
     },
     labels: [],
-    colors: ['#66CCCC', '#FF6666', '#66FF66', '#6666FF', '#FF66CC', '#66CCFF', '#FFFF66', '#CC66FF', '#FFCC66', '#66FFCC', '#CCFF66', '#FF6666', '#66FF66', '#6666FF', '#FF66CC', '#66CCFF', '#FFFF66', '#CC66FF', '#FFCC66', '#66FFCC'],    responsive: [
+    colors: ['#66CCCC', '#FF6666', '#66FF66', '#6666FF', '#FF66CC', '#66CCFF', '#FABC3C', '#CC66FF', '#F15025', '#66FFCC', '#C5D86D', '#FF6666', '#66FF66', '#6666FF', '#FF66CC', '#66CCFF', '#FFFF66', '#CC66FF', '#FFCC66', '#66FFCC'],
+      responsive: [
       {
         breakpoint: 480,
         options: {
@@ -255,11 +235,9 @@ ngOnInit(): void {
   this.fetchCodemags();
     this.fetchTotalSales();
     this.fetchTop10SalesByProduct();
-    //this.fetchSalesByProduct();
     this.fetchDataLOYALCUSTOMER();
     this.fetchOrders();
     this.fetchTotalClient();
-    //the filter
     this.fetchSalesData();
     this.fetchMonthlySalesRevenue();
     this.fetchSalesPerEmployee();
@@ -284,37 +262,6 @@ fetchCodemags(): void {
     );
 }
 
-/*
-fetchSalesPerEmployee(codemag?: string): void {
-  let params = new HttpParams();
-  const userData = this.authService.getUserData();
-
-  params = params.set('type', userData.Type);
-  params = params.set('startDate', this.startDate || '');
-  params = params.set('endDate', this.endDate || '');
-
-  if (userData.Type === 'employee') {
-      params = params.set('localisation', userData.localisation);
-  } else {
-      params = params.set('codemag', codemag || this.selectedCodemag || '');
-  }
-
-  this.http.get<any[]>('http://localhost:3000/salesperemployee', { params })
-      .subscribe(data => {
-          if (data.length === 0) {
-              // Handle case where no data is returned, e.g., show a message
-              console.log('No data available');
-              return;
-          }
-          const seriesData: number[] = data.map(item => parseFloat(item.salesperemployee));
-          const labelsData: string[] = data.map(item => item.vendeur);
-          this.chartOptionsPie.series = seriesData;
-          this.chartOptionsPie.labels = labelsData;
-      }, error => {
-          console.error('Error fetching sales per employee:', error);
-          // Handle error, e.g., show an error message
-      });
-}*/
 fetchSalesPerEmployee(codemag?: string): void {
   const userData = this.authService.getUserData();
   let params = new HttpParams().set('type', userData.Type)
@@ -345,8 +292,6 @@ fetchSalesPerEmployee(codemag?: string): void {
       this.chartOptionsPie.labels = labelsData;
     });
 }
-
-
 
 
 fetchMonthlySalesRevenue(codemag?: string): void {
@@ -407,20 +352,6 @@ formatChartData(data: any) {
 }
 
 //*****filter-date******
-/*
-applyDateFilter(): void {
-  this.fetchTotalSales();
-  this.fetchMonthlySalesRevenue();
-  this.fetchTransferts();
-  this.fetchOrders();
-  this.fetchDataLOYALCUSTOMER();
-}
-*/
-onFilterChange(newCodemag: string): void {
-  this.selectedCodemag = newCodemag;
-  this.fetchDataForFilters();
-}
-
 applyDateFilter(): void {
   this.fetchDataForFilters();
 }
@@ -430,6 +361,7 @@ fetchDataForFilters(): void {
   if (this.selectedCodemag === 'All') {
     this.fetchTotalSales();
     this.fetchOrders();
+    this.fetchTop10SalesByProduct()
     this.fetchMonthlySalesRevenue();
     this.fetchTransferts();
     this.fetchDataLOYALCUSTOMER();
@@ -438,6 +370,7 @@ fetchDataForFilters(): void {
   } else {
     this.fetchTotalSales(this.selectedCodemag);
     this.fetchOrders(this.selectedCodemag);
+    this.fetchTop10SalesByProduct(this.selectedCodemag);
     this.fetchMonthlySalesRevenue(this.selectedCodemag);
     this.fetchTransferts(this.selectedCodemag);
     this.fetchDataLOYALCUSTOMER(this.selectedCodemag);
@@ -446,9 +379,13 @@ fetchDataForFilters(): void {
   }
 }
 
+onFilterChange(newCodemag: string): void {
+  this.selectedCodemag = newCodemag;
+  this.fetchDataForFilters();
+}
 
 
-fetchOrders(codemag?: string, startDate?: Date, endDate?: Date): void {
+fetchOrders(codemag?: string): void {
   const userData = this.authService.getUserData();
   const headers = new HttpHeaders().set('userid', userData.id.toString());
 
@@ -463,9 +400,7 @@ fetchOrders(codemag?: string, startDate?: Date, endDate?: Date): void {
   if (codemag) {
     params = params.set('codemag', codemag);
   }
-
   //console.log('Fetching orders with parameters:', params.toString());
-
   this.http.get<Order[]>('http://localhost:3000/RecentOrders', { params, headers }).subscribe(
     (response: any) => {
       this.orderList = response.orders;
@@ -550,15 +485,17 @@ onTransfertSortChange(column: string): void {
   this.fetchTransferts(this.selectedCodemag);
 }
 
-fetchTop10SalesByProduct(): void {
+fetchTop10SalesByProduct(codemag?: string): void {
   const userData = this.authService.getUserData();
   const headers = new HttpHeaders().set('userid', userData.id.toString()); // Convert userId to string
 
-  let params = new HttpParams();
-  if (this.selectedCodemag) {
-    params = params.append('codemag', this.selectedCodemag);
-  }
-
+  let params = new HttpParams()
+  .set('startDate', this.startDate || '')
+      .set('endDate', this.endDate || '');
+    if (codemag) {
+      params = params.set('codemag', codemag);
+    }
+console.log("Params",params)
   this.http.get<TopSale[]>('http://localhost:3000/topsales', { params, headers })
     .subscribe(
       (data) => {
@@ -691,37 +628,6 @@ fetchTotalSales(codemag?: string): void {
     );
 }
 
-/*
-fetchTotalSales(startDate?: Date, endDate?: Date, codemag?: string): void {
-  const userData = this.authService.getUserData();
-  const headers = new HttpHeaders().set('userid', userData.id.toString()); // Convert userId to string
-  console.log(headers);
-
-  let params = new HttpParams()
-    .set('type', userData.Type)
-    .set('database', userData.baseName)
-    .set('startDate', this.startDate || '')  // Ensure startDate and endDate are properly set
-    .set('endDate', this.endDate || '');
-  if (codemag) {
-    params = params.append('codemag', codemag);
-  } else {
-    params = params.append('codemag', 'All'); // Pass 'All' when no specific codemag is selected
-  }
-  
-  this.http.get<any[]>('http://localhost:3000/totalsales', { params, headers })
-    .subscribe(
-      (response) => {
-        if (response.length > 0) {
-          this.totalSales = parseFloat(response[0].totalsales); // Convert to number
-        } else {
-          this.totalSales = null;  // No data found
-        }
-      },
-      (error) => {
-        console.error('Error fetching total sales:', error);
-      }
-    );
-}*/
 
 fetchTotalSalesMonthly(codemag?: string): void {
   const userData = this.authService.getUserData();
@@ -752,7 +658,6 @@ fetchTotalSalesMonthly(codemag?: string): void {
     );
 }
 
-/*******************Out****************/
 fetchSalesData(codemag?: string): void {
   const userData = this.authService.getUserData();
   const headers = new HttpHeaders().set('userid', userData.id.toString()); // Convert userId to string
@@ -771,7 +676,6 @@ fetchSalesData(codemag?: string): void {
     }
   );
 }
-
 
 
 }

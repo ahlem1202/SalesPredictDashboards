@@ -1186,102 +1186,10 @@ app.get('/totalsales', async (req, res) => {
     }
 });
 
-
-
-/*app.get('/salesperemployee', async (req, res) => {
-    const { codemag, type, localisation, startDate, endDate } = req.query;
-
-    // SQL query with optional filtering by Codemag
-    let query = `
-        SELECT codemag, vendeur, SUM(total) AS SalesPerEmployee
-        FROM vente
-        WHERE nature = 'VENTE'`;
-
-    let queryParams = [];
-
-    // Date filter logic
-    if (startDate && endDate) {
-        query += ' AND date BETWEEN $1::date AND $2::date';
-        queryParams.push(startDate, endDate);
-    }
-
-    if (type === 'employee') {
-        // For Employee, set codemag to localisation value
-        if (localisation) {
-            query += ' AND codemag = $' + (queryParams.length + 1);
-            queryParams.push(localisation);
-        } else {
-            // If localisation is not provided, return a 400 error
-            return res.status(400).json({ error: 'Localisation parameter is required for employee type' });
-        }
-    } else if (codemag) {
-        // For Manager, if codemag is provided, add it to the query
-        query += ' AND codemag = $' + (queryParams.length + 1);
-        queryParams.push(codemag);
-    }
-
-    query += `
-        GROUP BY vendeur, codemag`;
-
-    try {
-        const { rows } = await base.query(query, queryParams);
-        res.json(rows);
-    } catch (error) {
-        console.error('Error executing SQL query:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});*/
-
-/*app.get('/salesperemployee', async (req, res) => {
-    const { codemag, type, localisation, startDate, endDate } = req.query;
-
-    // SQL query with optional filtering by Codemag
-    let query = `
-        SELECT codemag, vendeur, SUM(total) AS SalesPerEmployee
-        FROM vente
-        WHERE nature = 'VENTE'`;
-
-    let queryParams = [];
-
-    // Apply date filter logic
-    if (startDate && endDate) {
-        query += ' AND date BETWEEN $1::date AND $2::date';
-        queryParams.push(startDate, endDate);
-    }
-
-    if (type === 'employee') {
-        // For Employee type, set codemag to localisation value if provided
-        if (localisation) {
-            query += ' AND codemag = $' + (queryParams.length + 1);
-            queryParams.push(localisation);
-        } else {
-            // If localisation is not provided, return a 400 error
-            return res.status(400).json({ error: 'Localisation parameter is required for employee type' });
-        }
-    } else if (codemag) {
-        // For Manager type or if codemag is provided, add it to the query
-        query += ' AND codemag = $' + (queryParams.length + 1);
-        queryParams.push(codemag);
-    }
-
-    query += `
-        GROUP BY codemag, vendeur`;
-
-    try {
-     
-        const { rows } = await base.query(query, queryParams);
-        console.log("sales per emp",rows) 
-        res.json(rows);
-    } catch (error) {
-        console.error('Error executing SQL query:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});*/
-
 app.get('/salesperemployee', async (req, res) => {
     const { codemag, type, localisation, startDate, endDate } = req.query;
-  console.log("startDate",startDate)
-  console.log("endDate",endDate)
+ // console.log("startDate",startDate)
+  //console.log("endDate",endDate)
     // SQL query with optional filtering by Codemag and dates
     let query = `
       SELECT 
@@ -1319,7 +1227,7 @@ app.get('/salesperemployee', async (req, res) => {
   
     try {
       const { rows } = await base.query(query, queryParams);
-      console.log('Rows:', rows); // Log rows fetched from database
+     // console.log('Rows:', rows); // Log rows fetched from database
   
       res.json(rows);
     } catch (error) {
@@ -1328,10 +1236,10 @@ app.get('/salesperemployee', async (req, res) => {
     }
   });
  
-
 app.get('/topsales', async (req, res) => {
     const { codemag, type, localisation, startDate, endDate } = req.query;
-    const userId = req.headers.userid; // Assuming you pass user ID in headers or adjust as per your setup
+ 
+  //  const userId = req.headers.userid; // Assuming you pass user ID in headers or adjust as per your setup
     // const base = userConnections[userId]; // Get the user's specific base connection
 
     // SQL query with optional filtering by Codemag and date range
@@ -1353,6 +1261,7 @@ app.get('/topsales', async (req, res) => {
         }
     } else if (codemag) {
         // For Manager type or if codemag is provided, add it to the query
+        query += ' AND codemag_id = $1';
         queryParams.push(codemag);
     }
 
@@ -1361,6 +1270,7 @@ app.get('/topsales', async (req, res) => {
         query += ' AND reception >= $' + (queryParams.length + 1) + ' AND reception <= $' + (queryParams.length + 2);
         queryParams.push(startDate, endDate);
     }
+    
 
     // Ensure grouping and ordering for top 10 sales
     query += `
@@ -1377,86 +1287,9 @@ app.get('/topsales', async (req, res) => {
     }
 });
 
-/*app.get('/RecentOrders', async (req, res) => {
-    const { codemag, type, localisation, search, sortBy, sortOrder, page, rowsPerPage, startDate, endDate } = req.query;
-    const userId = req.headers.userid;
-    
-    // Parse and validate pagination parameters
-    const parsedPage = parseInt(page, 10);
-    const parsedRowsPerPage = parseInt(rowsPerPage, 10);
-    if (isNaN(parsedPage) || isNaN(parsedRowsPerPage) || parsedPage <= 0 || parsedRowsPerPage <= 0) {
-        return res.status(400).json({ error: 'Invalid pagination parameters' });
-    }
-
-    const offset = (page - 1) * parseInt(rowsPerPage, 10);
-    const limit = parseInt(rowsPerPage, 10);
-
-    let query = `
-      SELECT 
-        vente,
-        TO_CHAR(date, 'YYYY-MM-DD') AS date,
-        heure,
-        codemag,
-        total
-      FROM 
-        vente
-      WHERE 
-        nature = 'VENTE'`;
-
-    let queryParams = [];
-
-    // Apply conditions based on type of request
-    if (type === 'employee') {
-        if (localisation) {
-            query += ' AND codemag = $1';
-            queryParams.push(localisation);
-        } else {
-            return res.status(400).json({ error: 'Localisation parameter is required for employee type' });
-        }
-    } else if (codemag) {
-        query += ' AND codemag = $1';
-        queryParams.push(codemag);
-    }
-
-    if (startDate && endDate) {
-       // query += ' AND date BETWEEN $' + (queryParams.length + 1) + ' AND $' + (queryParams.length + 2);
-       query += ' AND date BETWEEN $' + (queryParams.length + 1) + '::DATE AND $' + (queryParams.length + 2) + '::DATE';
-
-        queryParams.push(startDate, endDate);
-    }
-
-    if (search) {
-        const searchCondition = `
-          (vente::text ILIKE $${queryParams.length + 1} OR 
-           codemag::text ILIKE $${queryParams.length + 1} OR 
-           TO_CHAR(date, 'YYYY-MM-DD') ILIKE $${queryParams.length + 1})`;
-        query += ` AND ${searchCondition}`;
-        queryParams.push(`%${search}%`);
-    }
-
-    query += `
-      ORDER BY ${sortBy} ${sortOrder.toUpperCase()}
-      LIMIT $${queryParams.length + 1}
-      OFFSET $${queryParams.length + 2}`;
-    queryParams.push(limit, offset);
-
-    try {
-        const { rows } = await base.query(query, queryParams);
-        const totalQuery = `SELECT COUNT(*) FROM vente WHERE nature = 'VENTE'`;
-        const totalResult = await base.query(totalQuery);
-        const total = parseInt(totalResult.rows[0].count, 10);
-
-        res.json({ orders: rows, total });
-    } catch (error) {
-        console.error('Error executing query', error.stack);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-});*/
-
 app.get('/RecentOrders', async (req, res) => {
     const { codemag, type, localisation, search, sortBy, sortOrder, page, rowsPerPage, startDate, endDate } = req.query;
     const userId = req.headers.userid;
-
     // Parse and validate pagination parameters
     const parsedPage = parseInt(page, 10);
     const parsedRowsPerPage = parseInt(rowsPerPage, 10);
@@ -1519,7 +1352,6 @@ app.get('/RecentOrders', async (req, res) => {
         const totalQuery = `SELECT COUNT(*) FROM vente WHERE nature = 'VENTE'`;
         const totalResult = await base.query(totalQuery);
         const total = parseInt(totalResult.rows[0].count, 10);
-
         res.json({ orders: rows, total });
     } catch (error) {
         console.error('Error executing query', error.stack);
@@ -1607,8 +1439,6 @@ app.get('/transfert', async (req, res) => {
     }
 });
 
-
-
 app.get('/clientCount', async (req, res) => {
     const userId = req.headers.userid; // Assuming you pass user ID in headers or adjust as per your setup
     //const base = userConnections[userId]; // Get the user's specific base connection
@@ -1624,13 +1454,13 @@ app.get('/clientCount', async (req, res) => {
 });
 
 app.get('/NewLoyalCustomer', (req, res) => {
-    const userId = req.headers.userid; // Assuming you pass user ID in headers or adjust as per your setup
+    //const userId = req.headers.userid; // Assuming you pass user ID in headers or adjust as per your setup
     //const base = userConnections[userId]; // Get the user's specific base connection
 
     const codemag = req.query.codemag;
     const { startDate, endDate } = req.query;
-    //console.log("startDateEEEEe", startDate);
-    //console.log("endDateEEEEe", endDate);
+    console.log("startDateEEEEe", startDate);
+    console.log("endDateEEEEe", endDate);
 
     let query = `
         SELECT
@@ -1673,35 +1503,6 @@ app.get('/NewLoyalCustomer', (req, res) => {
     });
 });
 
-
-app.get('/stockLevels', (req, res) => {
-    const userId = req.headers.userid; // Assuming you pass user ID in headers or adjust as per your setup
-    //const base = userConnections[userId]; // Get the user's specific base connection
-
-    const query = `
-    SELECT 
-    DATE_FORMAT(s.Date, '%Y-%m') AS Month,
-    REPLACE(s.Designation, '�', '°') AS Designation,
-    SUM(s.Qte) AS TotalStock
-FROM 
-    stock s
-GROUP BY 
-    Month, Designation
-ORDER BY 
-    Month DESC, TotalStock DESC
-LIMIT 10;
-
-
-    
-    `;
-    base.query(query, (err, results) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        res.json(results.rows);
-        //console.log("stocklevel :",results.rows)
-    });
-});
 
 app.get('/storessales', (req, res) => {
     const userId = req.headers.userid; // Assuming you pass user ID in headers or adjust as per your setup
@@ -1892,8 +1693,6 @@ app.get('/TotalSalesCount', async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-
-
 
 app.get('/TotalQuantitySold', async (req, res) => {
     const { localisation , startDate, endDate } = req.query;
