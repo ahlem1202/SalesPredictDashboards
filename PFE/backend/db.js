@@ -1,5 +1,5 @@
 // db.js
-const { Pool } = require('pg');
+/*const { Pool } = require('pg');
 
 
 const dbkastello = new Pool({
@@ -18,3 +18,4 @@ dbkastello.connect(function (error) {
 });
 
 module.exports = dbkastello;
+*/

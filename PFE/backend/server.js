@@ -3,7 +3,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 /********** */
 const pg = require('pg');
-//const mysql = require('mysql');
 /********** */
 const app = express();
 const cors = require('cors');
@@ -12,10 +11,7 @@ const jwt = require('jsonwebtoken');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
 const activeSessions = {};// Store active sessions with their last heartbeat timestamps
-//const { sendPasswordResetEmail } = require('./email'); // Import the function to send password reset email
 const config = require('./config'); // Assuming config.js is in the same directory
-const zxcvbn = require('zxcvbn'); // Example library for password strength estimation
-
 const port = 3000;
 // Database pfe connection
 const db = require('./connection.js');
@@ -25,8 +21,6 @@ const multer = require('multer');
 const { Pool } = require('pg');
 const upload = multer({ dest: 'uploads/' });
 const csv = require('csv-parser');
-const { start } = require('repl');
-
 
 
 app.listen(port, () => {
@@ -37,13 +31,14 @@ app.use(session({
     secret: 'SECRET',
     resave: false,
     saveUninitialized: true,
-    cookie: 
+    cookie: { secure: false }
+   /* cookie: 
     {
-        maxAge: 2 * 60 * 1000 // 2 minutes
-    }
+        maxAge: 24 * 60 * 60 * 1000 // 1 day (example)
+    }*/
 }
 ));
- 
+    
 app.use(bodyParser.json());//used to handle conversation to and from json
 
 app.use(cors({
@@ -79,10 +74,6 @@ app.post('/register', async (req, res) => {
 
         console.log('Executing query:', userQuery);
 
-
-       // const { rows } = await db.query(userQuery, [ firstName, lastName,company, emailAddress, hashedPassword ,Type,baseName]);
-
-       // console.log('Executing query:', userQuery);
 
         const userId = rows[0].id;
 
@@ -201,7 +192,7 @@ app.post('/logout', (req, res) => {
         res.status(200).json({ message: 'No active connection to close' });
     }
 });
-
+/*
 app.post('/close-connection',async (req, res) => {
     try{
         await dbkastello.end();
@@ -211,7 +202,7 @@ app.post('/close-connection',async (req, res) => {
         console.error('Error closing connection:', error);
         res.status(500).json ({error: 'Error closing connection'});
     }
-})
+})*/
  
 app.post('/forget-password', (req, res) => {
     const { email } = req.body;
@@ -387,45 +378,6 @@ app.post('/reset-password', (req, res) => {
 });
 /**************************************Databases : Creation & uploading ****************************** */
 
-// Route to execute SQL script file and create database
-/*app.post('/create-database', async (req, res) => { 
-    try {
-        const { baseName } = req.body; // Destructuring baseName from the request body
-        //console.log('Received baseName:', baseName); // Log the received baseName
-        
-      // Create the database dynamically
-      await db.query(`CREATE DATABASE ${baseName};`);
-      // Insert the database name into the 'databases' table
-      const insertQuery = 'INSERT INTO databases ("baseName") VALUES ($1)';
-      const insertValues = [baseName];
-
-      await db.query(insertQuery, insertValues);
-      // Connect to the newly created database
-      const dbPool = new Client({
-        host: "localhost",
-        user: "postgres",
-        port: 5432,
-        password: "khedma123",
-        database: baseName
-      }); 
-   
-      await dbPool.connect();
-  
-      // Read the SQL script file
-      const sqlScript = fs.readFileSync('C:/Users/boual/Desktop/ZAI-pfe/PFE/PFE/backend/scriptBase.sql', { encoding: 'utf-8' });
-  
-      // Execute the table creation scripts 
-      await dbPool.query(sqlScript);
-   
-      // Close the connection
-      await dbPool.end();
-  
-      res.status(200).json({ message: 'Database created successfully.' });
-    } catch (error) {
-      console.error('Error executing SQL script:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
-    }
-});*/
 app.post('/create-database', async (req, res) => { 
     try {
         const { baseName } = req.body;
@@ -1459,8 +1411,8 @@ app.get('/NewLoyalCustomer', (req, res) => {
 
     const codemag = req.query.codemag;
     const { startDate, endDate } = req.query;
-    console.log("startDateEEEEe", startDate);
-    console.log("endDateEEEEe", endDate);
+    //console.log("startDateEEEEe", startDate);
+    //console.log("endDateEEEEe", endDate);
 
     let query = `
         SELECT
